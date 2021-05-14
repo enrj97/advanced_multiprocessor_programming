@@ -6,16 +6,17 @@
 #include <omp.h>
 #include <time.h>
 #include <unistd.h>
+#include <climits>
 
-class FilterLock {
+class BakeryLock {
   
   public:
-  int* level;
-  int* victim;
+  bool * flag;
+  long long * label;
   int n;
 
-  FilterLock(int n);
-  ~FilterLock ();
+  BakeryLock(int n);
+  ~BakeryLock ();
   void lock();
   void unlock();
 

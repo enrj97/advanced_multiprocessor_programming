@@ -6,6 +6,11 @@ FilterLock::FilterLock (int n) {
   this -> n = n;
 }
 
+FilterLock::~FilterLock () {
+    delete[] level;
+    delete[] victim;
+}
+
 void FilterLock::lock() {
   int me = omp_get_thread_num();
   for (int i = 1; i < n; i++) {

@@ -5,9 +5,10 @@
 #include <chrono>
 #include <omp.h>
 #include "locks/filterLock.hpp"
+#include "locks/bakeryLock.hpp"
 
 
-FilterLock lock(4);
+BakeryLock lock(4);
 
 int main(int argc, char *argv[]){
 	auto start = std::chrono::high_resolution_clock::now();
@@ -26,7 +27,6 @@ int main(int argc, char *argv[]){
 		sleep(1);
 		lock.unlock();
 	}
-
 
 	return 0;
 }
