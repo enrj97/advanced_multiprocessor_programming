@@ -3,7 +3,7 @@ CFLAGS = -Wall -g -fopenmp -std=c++11
 
 all: locks
 
-locks: main.o FilterLock.o BakeryLock.o
+locks: main.o filterLock.o bakeryLock.o
 	$(CC) $(CFLAGS) -o locks  main.o filterLock.o bakeryLock.o
 
 main.o: main.cpp
