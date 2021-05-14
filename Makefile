@@ -1,19 +1,19 @@
 CC = g++
 CFLAGS = -Wall -g -fopenmp -std=c++11
 
-all: main
+all: locks
 
-main: main.o FilterLock.o BakeryLock.o
-	$(CC) $(CFLAGS) -o main  main.o FilterLock.o BakeryLock.o
+locks: main.o FilterLock.o BakeryLock.o
+	$(CC) $(CFLAGS) -o locks  main.o filterLock.o bakeryLock.o
 
-main.o: main.cpp 
+main.o: main.cpp
 	$(CC) $(CFLAGS) -c main.cpp
 
-FilterLock.o: locks/filterLock.hpp
+filterLock.o: locks/filterLock.hpp
 	$(CC) $(CFLAGS) -c locks/filterLock.cpp
 
-BakeryLock.o: locks/bakeryLock.hpp
+bakeryLock.o: locks/bakeryLock.hpp
 	$(CC) $(CFLAGS) -c locks/bakeryLock.cpp
 
-clean: 
-	rm -rf *.o main
+clean:
+	rm -rf *.o locks
