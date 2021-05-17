@@ -8,26 +8,39 @@
 #include "locks/filterLock.hpp"
 #include "locks/bakeryLock.hpp"
 
+// 128K
+std::stringstream write_buffer;
+std::ofstream dataCollector("locks.csv", std::ios::binary | std::ios::trunc);
 
 int runLock(BaseLock *lock, int nthreads)
 {
-	auto start = std::chrono::high_resolution_clock::now();
-	auto end = std::chrono::high_resolution_clock::now();
-	int counter=0, tid;
-
+	int counter = 0;
 	omp_set_num_threads(nthreads); // Use 4 threads for all consecutive parallel region
 
 	std::cout << "Running " << lock->get_name() << " for " << nthreads << " threads" << std::endl;
 
-	#pragma omp parallel private(tid) shared(counter, start, end)
+	#pragma omp parallel shared(counter, write_buffer)
 	{
-		tid = omp_get_thread_num();
+		std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
+		int tid = omp_get_thread_num();
 
+		start = std::chrono::high_resolution_clock::now();
 		lock->lock();
+		end = std::chrono::high_resolution_clock::now();
+
+		write_buffer
+			<< lock->get_name() << ","
+			<< nthreads << ","
+			<< counter << ","
+			<< tid << ","
+			<< std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << std::endl;
+
+		counter++;
 		std::cout << tid << std::endl;
-		sleep(1);
 		lock->unlock();
 	}
+
+	dataCollector << write_buffer.rdbuf() << std::flush;
 
 	return EXIT_SUCCESS;
 }
@@ -50,6 +63,8 @@ int main(int argc, char *argv[])
 			return EXIT_FAILURE;
 		}
 	}
+
+	dataCollector.close();
 
 	return EXIT_SUCCESS;
 }

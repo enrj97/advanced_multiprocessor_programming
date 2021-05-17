@@ -1,6 +1,9 @@
 # Main output
 lock
 
+# Collected data
+*.csv
+
 # Prerequisites
 *.d
 
