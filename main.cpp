@@ -9,7 +9,7 @@
 #include "locks/bakeryLock.hpp"
 
 // 128K
-std::stringstream write_buffer;
+std::stringstream writeBuffer;
 std::ofstream dataCollector("locks.csv", std::ios::binary | std::ios::trunc);
 
 int runLock(BaseLock *lock, int nthreads)
@@ -19,7 +19,7 @@ int runLock(BaseLock *lock, int nthreads)
 
 	std::cout << "Running " << lock->get_name() << " for " << nthreads << " threads" << std::endl;
 
-	#pragma omp parallel shared(counter, write_buffer)
+	#pragma omp parallel shared(counter, writeBuffer)
 	{
 		std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
 		int tid = omp_get_thread_num();
@@ -28,7 +28,7 @@ int runLock(BaseLock *lock, int nthreads)
 		lock->lock();
 		end = std::chrono::high_resolution_clock::now();
 
-		write_buffer
+		writeBuffer
 			<< lock->get_name() << ","
 			<< nthreads << ","
 			<< counter << ","
@@ -40,7 +40,7 @@ int runLock(BaseLock *lock, int nthreads)
 		lock->unlock();
 	}
 
-	dataCollector << write_buffer.rdbuf() << std::flush;
+	dataCollector << writeBuffer.rdbuf() << std::flush;
 
 	return EXIT_SUCCESS;
 }
