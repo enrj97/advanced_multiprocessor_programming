@@ -7,17 +7,20 @@
 #include <time.h>
 #include <unistd.h>
 #include <climits>
+#include "baseLock.hpp"
 
-class BakeryLock {
-  
+class BakeryLock : public BaseLock {
+  private:
+    bool * flag;
+    long long * label;
+    int n;
   public:
-  bool * flag;
-  long long * label;
-  int n;
+    BakeryLock(int n);
+    ~BakeryLock ();
+    void lock();
+    void unlock();
 
-  BakeryLock(int n);
-  ~BakeryLock ();
-  void lock();
-  void unlock();
-
+    const char *get_name() {
+      return "BakeryLock";
+    };
 };
