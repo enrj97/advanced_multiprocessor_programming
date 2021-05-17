@@ -6,17 +6,21 @@
 #include <omp.h>
 #include <time.h>
 #include <unistd.h>
+#include "baseLock.hpp"
 
-class FilterLock {
-  
+class FilterLock : public BaseLock {
+  private:
+    int* level;
+    int* victim;
+    int n;
+
   public:
-  int* level;
-  int* victim;
-  int n;
+    FilterLock(int n);
+    ~FilterLock ();
+    void lock();
+    void unlock();
 
-  FilterLock(int n);
-  ~FilterLock ();
-  void lock();
-  void unlock();
-
+    const char *get_name() {
+      return "FilterLock";
+    };
 };
