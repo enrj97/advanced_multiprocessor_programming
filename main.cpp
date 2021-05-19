@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include "locks/filterLock.hpp"
 #include "locks/bakeryLock.hpp"
+#include "locks/lamportLock.hpp"
 
 // 128K
 std::stringstream writeBuffer;
@@ -59,6 +60,13 @@ int main(int argc, char *argv[])
 
 	for (nthreads = 2; nthreads <= 8; nthreads += 2) {
 		FilterLock lock(nthreads);
+		if (runLock(&lock, nthreads) != EXIT_SUCCESS) {
+			return EXIT_FAILURE;
+		}
+	}
+
+	for (nthreads = 2; nthreads <= 8; nthreads += 2) {
+		LamportLock lock(nthreads);
 		if (runLock(&lock, nthreads) != EXIT_SUCCESS) {
 			return EXIT_FAILURE;
 		}
