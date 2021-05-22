@@ -8,6 +8,8 @@
 #include "locks/filterLock.hpp"
 #include "locks/bakeryLock.hpp"
 #include "locks/lamportLock.hpp"
+#include "locks/boulangerieLock.hpp"
+#include "locks/petersonLock.hpp"
 
 // 128K
 std::stringstream writeBuffer;
@@ -51,6 +53,19 @@ int main(int argc, char *argv[])
 	int nthreads;
 	omp_set_dynamic(0);     // Explicitly disable dynamic teams
 
+
+	PetersonLock lock(2);
+	if (runLock(&lock, 2) != EXIT_SUCCESS) {
+		return EXIT_FAILURE;
+	}
+	
+	for (nthreads = 2; nthreads <= 8; nthreads += 2) {
+		BoulangerieLock lock(nthreads);
+		if (runLock(&lock, nthreads) != EXIT_SUCCESS) {
+			return EXIT_FAILURE;
+		}
+	}
+
 	for (nthreads = 2; nthreads <= 8; nthreads += 2) {
 		BakeryLock lock(nthreads);
 		if (runLock(&lock, nthreads) != EXIT_SUCCESS) {
@@ -71,6 +86,8 @@ int main(int argc, char *argv[])
 			return EXIT_FAILURE;
 		}
 	}
+
+	
 
 	dataCollector.close();
 
