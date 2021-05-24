@@ -11,7 +11,8 @@
 #include "locks/boulangerieLock.hpp"
 #include "locks/petersonLock.hpp"
 
-// 128K
+#define NUM_ITERATIONS 1024
+
 std::stringstream writeBuffer;
 std::ofstream dataCollector("locks.csv", std::ios::binary | std::ios::trunc);
 
@@ -26,21 +27,26 @@ int runLock(BaseLock *lock, int nthreads)
 	{
 		std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
 		int tid = omp_get_thread_num();
+		bool flag = true;
 
 		start = std::chrono::high_resolution_clock::now();
-		lock->lock();
-		end = std::chrono::high_resolution_clock::now();
 
-		writeBuffer
-			<< lock->get_name() << ","
-			<< nthreads << ","
-			<< counter << ","
-			<< tid << ","
-			<< std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << std::endl;
+		do {
+			lock->lock();
+			end = std::chrono::high_resolution_clock::now();
 
-		counter++;
-		std::cout << tid << std::endl;
-		lock->unlock();
+			writeBuffer
+				<< lock->get_name() << ","
+				<< nthreads << ","
+				<< counter << ","
+				<< tid << ","
+				<< std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << std::endl;
+
+			counter++;
+			flag = counter < NUM_ITERATIONS;
+
+			lock->unlock();
+		}	while (flag);
 	}
 
 	dataCollector << writeBuffer.rdbuf() << std::flush;
@@ -58,7 +64,7 @@ int main(int argc, char *argv[])
 	if (runLock(&lock, 2) != EXIT_SUCCESS) {
 		return EXIT_FAILURE;
 	}
-	
+
 	for (nthreads = 2; nthreads <= 8; nthreads += 2) {
 		BoulangerieLock lock(nthreads);
 		if (runLock(&lock, nthreads) != EXIT_SUCCESS) {
@@ -87,7 +93,7 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	
+
 
 	dataCollector.close();
 
