@@ -1,0 +1,103 @@
+%--------------------
+% Packages
+% -------------------
+\documentclass[12pt,a4paper, tikz]{article}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{fancyhdr}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\usepackage{hyperref}
+
+\usepackage{multirow}
+\usepackage{fancyhdr}
+\usepackage{pgfplots}
+\usepackage{makecell}
+
+%\usepackage[pdftex]{graphicx} % Required for including pictures
+\usepackage[]{hyperref} % Format links for pdf
+\usepackage{calc} % To reset the counter in the document after title page
+\usepackage{enumitem} % Includes lists
+
+\frenchspacing % No double spacing between sentences
+\linespread{1.1} % Set linespace
+\usepackage[a4paper, lmargin=0.1666\paperwidth, rmargin=0.1666\paperwidth, tmargin=0.1111\paperheight, bmargin=0.1111\paperheight]{geometry} %margins
+%\usepackage{parskip}
+
+\usepackage[all]{nowidow} % Tries to remove widows
+\usepackage[protrusion=true,expansion=true]{microtype} % Improves typography, load after fontpackage is selected
+
+\usepackage{listings}
+\usepackage{color}
+
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{12005483, 11717702}
+\lhead{Advanced Multiprocessor Programming}
+\rfoot{\thepage}
+
+
+%-----------------------
+% Set pdf information and add title, fill in the fields
+%-----------------------
+\hypersetup{
+pdfsubject = {Advanced Multiprocessor Programming - Project 1},
+pdftitle = {},
+pdfauthor = {Enrico Coluccia, Aron Wussler}
+}
+
+\lstset{ % General setup for the package
+	language=C,
+	basicstyle=\small\sffamily,
+	numbers=left,
+ 	numberstyle=\tiny,
+	frame=tb,
+	tabsize=4,
+	columns=fixed,
+	showstringspaces=false,
+	showtabs=false,
+	keepspaces,
+	commentstyle=\color{red},
+	keywordstyle=\color{blue}
+}
+
+%-----------------------
+% Begin document
+%-----------------------
+\begin{document}
+\title{Advanced Multiprocessor Programming | Project 1}
+
+\begin{titlepage}
+    \begin{center}
+        \vspace*{1cm}
+
+        \Huge
+        \textbf{Advanced Multiprocessor Programming}
+
+        \vspace{0.5cm}
+        \LARGE
+        Project 1 \\
+
+        \vspace{1.5cm}
+
+        \small
+        \textbf{Enrico Coluccia, 12005483\\ Aron Wussler, 11717702}
+
+        \vfill
+
+        \vspace{0.8cm}
+
+
+    \end{center}
+\end{titlepage}
+
+\section{Introduction}
+\input{introduction}
+
+\section{Implementation}
+\input{implementation}
+
+\section{Performance}
+\input{performance}
+
+\end{document}

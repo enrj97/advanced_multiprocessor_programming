@@ -46,7 +46,7 @@ int runLock(BaseLock *lock, int nthreads)
 			flag = counter < NUM_ITERATIONS;
 
 			lock->unlock();
-		}	while (flag);
+		} while (flag);
 	}
 
 	dataCollector << writeBuffer.rdbuf() << std::flush;
