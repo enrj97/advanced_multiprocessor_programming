@@ -54,16 +54,14 @@ void BoulangerieLock::lock () {
 		//taking advantage of inconsistent reads
 		do{ 
 			tmp_c = choosing[j];
-		} 
-		while(tmp_c);			
+		} while(tmp_c);			
 
 		tmp_n = nullptr;
 
 		do{
 			prev_n = tmp_n; 
 			tmp_n = &number[j];
-		}
-		while (*tmp_n != 0 && (num[i] > *tmp_n || (num[i] == *tmp_n && i > j)) && (tmp_n == prev_n || prev_n == nullptr));	 
+		} while (*tmp_n != 0 && (num[i] > *tmp_n || (num[i] == *tmp_n && i > j)) && (tmp_n == prev_n || prev_n == nullptr));	 
 	} 
 }
 

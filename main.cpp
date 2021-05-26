@@ -10,6 +10,8 @@
 #include "locks/lamportLock.hpp"
 #include "locks/boulangerieLock.hpp"
 #include "locks/petersonLock.hpp"
+#include "locks/tas.hpp"
+#include "locks/ttas.hpp"
 
 #define NUM_ITERATIONS 1024
 
@@ -99,7 +101,19 @@ int main(int argc, char *argv[])
 		}
 	}
 
+	for (nthreads = 2; nthreads <= 8; nthreads += 2) {
+		TestAndSetLock lock(nthreads);
+		if (runLock(dataCollector, &lock, nthreads) != EXIT_SUCCESS) {
+			return EXIT_FAILURE;
+		}
+	}
 
+	for (nthreads = 2; nthreads <= 8; nthreads += 2) {
+		TestAndTestAndSetLock lock(nthreads);
+		if (runLock(dataCollector, &lock, nthreads) != EXIT_SUCCESS) {
+			return EXIT_FAILURE;
+		}
+	}
 
 	dataCollector.close();
 
