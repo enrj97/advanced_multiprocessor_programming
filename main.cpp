@@ -13,12 +13,10 @@
 
 #define NUM_ITERATIONS 1024
 
-std::stringstream writeBuffer;
-std::ofstream dataCollector("locks.csv", std::ios::binary | std::ios::trunc);
-
-int runLock(BaseLock *lock, int nthreads)
+int runLock(std::ofstream& dataCollector, BaseLock *lock, int nthreads)
 {
 	int counter = 0;
+	std::stringstream writeBuffer;
 	omp_set_num_threads(nthreads); // Use 4 threads for all consecutive parallel region
 
 	std::cout << "Running " << lock->get_name() << " for " << nthreads << " threads" << std::endl;
@@ -57,38 +55,46 @@ int runLock(BaseLock *lock, int nthreads)
 int main(int argc, char *argv[])
 {
 	int nthreads;
+
+	if (argc != 2) {
+		printf("Usage: lock [out filename]\n");
+		exit(EXIT_FAILURE);
+	}
+
+	std::ofstream dataCollector(argv[1], std::ios::binary | std::ios::trunc);
+
 	omp_set_dynamic(0);     // Explicitly disable dynamic teams
 
 
 	PetersonLock lock(2);
-	if (runLock(&lock, 2) != EXIT_SUCCESS) {
+	if (runLock(dataCollector, &lock, 2) != EXIT_SUCCESS) {
 		return EXIT_FAILURE;
 	}
 
 	for (nthreads = 2; nthreads <= 8; nthreads += 2) {
 		BoulangerieLock lock(nthreads);
-		if (runLock(&lock, nthreads) != EXIT_SUCCESS) {
+		if (runLock(dataCollector, &lock, nthreads) != EXIT_SUCCESS) {
 			return EXIT_FAILURE;
 		}
 	}
 
 	for (nthreads = 2; nthreads <= 8; nthreads += 2) {
 		BakeryLock lock(nthreads);
-		if (runLock(&lock, nthreads) != EXIT_SUCCESS) {
+		if (runLock(dataCollector, &lock, nthreads) != EXIT_SUCCESS) {
 			return EXIT_FAILURE;
 		}
 	}
 
 	for (nthreads = 2; nthreads <= 8; nthreads += 2) {
 		FilterLock lock(nthreads);
-		if (runLock(&lock, nthreads) != EXIT_SUCCESS) {
+		if (runLock(dataCollector, &lock, nthreads) != EXIT_SUCCESS) {
 			return EXIT_FAILURE;
 		}
 	}
 
 	for (nthreads = 2; nthreads <= 8; nthreads += 2) {
 		LamportLock lock(nthreads);
-		if (runLock(&lock, nthreads) != EXIT_SUCCESS) {
+		if (runLock(dataCollector, &lock, nthreads) != EXIT_SUCCESS) {
 			return EXIT_FAILURE;
 		}
 	}
