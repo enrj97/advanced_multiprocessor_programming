@@ -1,0 +1,360 @@
+\subsection{Filter Lock}
+The Filter lock is a generalized version of the Peterson lock, it creates n-1 "waiting rooms", or levels,
+that a thread must traverse before acquiring the lock. Levels satisfy two important properties:
+
+\begin{itemize}
+	\item At least one thread trying to enter level succeeds.
+	\item If more than one thread is trying to enter level, then at least one is blocked
+\end{itemize}
+
+The Filter lock uses an n-element integer array (called level[]) to indicates the highest level that a thread is trying to enter. Each thread must pass n-1 levels to enter in the critical section and each level has its own victim to filter out one thread and excluding it from the next level.
+
+The Filter lock satisfies mutual exlusion, deadlock freedom and starvation freedom properties but it is not fair since the threads can overtake others an arbitrary number of times (see the Exercise 12 from the book).
+
+\begin{minted}[
+	frame=lines,
+	framesep=2mm,
+	baselinestretch=.9,
+	fontsize=\footnotesize,
+	linenos,
+	breaklines
+	]
+	{C}
+#include "filterLock.hpp"
+
+FilterLock::FilterLock (int n) {
+	level = new int[n];
+	victim = new int[n];
+	this -> n = n;
+}
+
+FilterLock::~FilterLock () {
+	delete[] level;
+	delete[] victim;
+}
+
+void FilterLock::lock() {
+	int me = omp_get_thread_num();
+	for (int i = 1; i < n; i++) {
+		level[me] = i;
+		victim[i] = me;
+		for( int j = 0; j < n; j++) {
+			while ((j != me) && (level[j] >= i && victim[i] == me)) {}
+		}
+	}
+}
+
+void FilterLock::unlock() {
+	int me = omp_get_thread_num();
+	level[me] = 0;
+}
+\end{minted}
+
+\subsection{Tournament tree of 2-thread Peterson locks}
+Another way to generalize the Peterson lock is to arrange a number of 2-thread locks in a binary tree. Suppose n is a power of two. Each thread is assigned a leaf lock which it shares with one other thread. Each lock
+treats one thread as thread 0 and the other as thread 1.
+
+In the tree-lock’s acquire method, the thread acquires every two-thread Peterson lock fromthat thread’s leaf to the root. The tree-lock’s release method for
+the tree-lock unlocks each of the 2-thread Peterson locks that thread has acquired, from the root back to its leaf.
+
+The Tournament tree of 2-thread Peterson locks satisfies mutual exlusion, deadlock freedom and starvation freedom properties but it is not fair since a thread can be delayed and overtaken an arbitrary number of times(see the Exercise 12 from the book).
+
+\begin{minted}[
+	frame=lines,
+	framesep=2mm,
+	baselinestretch=.9,
+	fontsize=\footnotesize,
+	linenos,
+	breaklines
+	]
+	{C}
+	
+\end{minted}
+
+\subsection{Herlihy-Shavit Bakery Lock}
+This is a modified version of the original Lamport's Bakery Lock implementation. In this lock, flag[i] is a Boolean flag indicating whether i wants to
+enter the critical section, and label[i] is an integer that indicates the thread’s order when entering the bakery, for each thread i.
+
+Each time a thread acquires a lock, it generates a new label[] in two steps. First, it reads all the other threads’ labels in any order. Second, it reads all the other
+threads’ labels one after the other (this can be done in some arbitrary order) and
+generates a label greater by one than the maximal label it read. We call the code from the raising of the flag (Line 19) to the writing of the new label[] (Line 30)
+the doorway. 
+It establishes that thread’s order with respect to the other threads trying to acquire the lock. If two threads execute their doorways concurrently, they may read the same maximal label and pick the same new label. To break this symmetry, the algorithm uses a lexicographical ordering << on pairs of label[] and thread ids at line 36, each thread read the labels one after the other in some arbitrary order until it determines that no
+thread with a raised flag has a lexicographically smaller label/id pair, then it enters the critical section.
+
+The Herlihy-Shavit Bakery Lock satisfies mutual exlusion, deadlock freedom and starvation freedom properties and it is also fair (first-come-first-serve, see Lemma 2.6.2 from the Book)
+
+
+\begin{minted}[
+	frame=lines,
+	framesep=2mm,
+	baselinestretch=.9,
+	fontsize=\footnotesize,
+	linenos,
+	breaklines
+	]
+	{C}
+#include "bakeryLock.hpp"
+
+BakeryLock::BakeryLock (int num) {
+	flag = new bool[num];
+	label = new long long[num];
+	for (int i = 0; i < num; i ++) {
+		flag[i] = false;
+		label[i] = 0;
+	}
+	n = num;
+}
+BakeryLock::~BakeryLock () {
+	delete[] flag;
+	delete[] label;
+}
+
+void BakeryLock::lock () {
+	int i = omp_get_thread_num();
+	flag[i] = true;
+	long long max = label[0];
+	for (int j = 1; j < n; j ++) {
+		if (label[j] > max) {
+			max = label[j];
+		}
+	}
+	if (max == LLONG_MAX) {
+		std::cout << "ERROR: Label Value Overflow" << std::endl;
+		exit (-1);
+	}
+	label[i] = max + 1;
+	
+	for (int j = 0; j < n; j++) {
+		if (i == j) {
+			continue;
+		}
+		while (flag[j] && ((label[j] < label[i]) ||( label[i] == label[j] && j < i))) {};
+	}
+}
+
+void BakeryLock::unlock () {
+	flag[omp_get_thread_num()] = false;
+}
+
+\end{minted}
+
+\subsection{Lamport Bakery Lock}
+This is the original version of the Lamport's Bakery Lock  ( \url{http://lamport.azurewebsites.net/pubs/bakery.pdf}).
+
+Each time a thread acquires a lock, it generates a new number[] by reading all the other threads’ labels one after the other (this can be done in some arbitrary order) and generates a number greater by one than the maximal number it read. We call the code from the raising of the choosing flag (Line 20) to the writing of the new number[] (Line 22) the doorway section. 
+
+It establishes that thread’s order with respect to the other threads trying to acquire the lock. If two threads execute their doorways concurrently, they may read the same maximal label and pick the same new label. To break this symmetry, the algorithm uses a lexicographical ordering << on pairs of number[] as already explained in the previous lock, then it enters the critical section. 
+
+The Lamport Bakery Lock satisfies mutual exlusion, deadlock freedom and starvation freedom properties and it is also fair, since if e.g. thread A executes the doorway before thread B then B is locked out while number[A] is greater than 0.
+
+\begin{minted}[
+	frame=lines,
+	framesep=2mm,
+	baselinestretch=.9,
+	fontsize=\footnotesize,
+	linenos,
+	breaklines
+	]
+	{C}
+#include "lamportLock.hpp"
+
+LamportLock::LamportLock (int num) {
+	choosing = new bool[num];
+	number = new int[num];
+	for (int i = 0; i < num; i ++) {
+		choosing[i] = false;
+		number[i] = 0;
+	}
+	n = num;
+}
+
+LamportLock::~LamportLock () {
+	delete[] choosing;
+	delete[] number;
+}
+
+void LamportLock::lock () {
+	int i = omp_get_thread_num();
+	choosing[i] = true;
+	number[i] = findMax() + 1;
+	choosing[i] = false;
+	
+	for (int j = 0; j < n; j++) {
+		if (j == i)
+			continue;
+
+		while (choosing[j]) {}
+		
+		while (number[j] != 0 && (number[i] > number[j] || (number[i] == number[j] && i > j))) {}		 
+	} 
+}
+
+void LamportLock::unlock () {
+	number[omp_get_thread_num()] = false;
+}
+
+int LamportLock::findMax() {
+	int m = number[0];
+	for (int i=1; i <n; ++i) {
+		if (number[i] > m)
+		m = number[i];
+	}
+	return m;
+}
+	
+\end{minted}
+
+\subsection{Boulangerie Lock}
+The Boulangerie Lock \cite{MOSES201846} is a better version of the Lamport Bakery Lock that applies two improvements:
+\begin{itemize}
+	\item Optimizing for low contention: if the thread i has obtained number[i] =1 then the only processes j that can ever have a better ticket are ones whose tid is smaller than i. It follows that when number[i] =1, there is no need to perform the spinning section for values j >i. To avoid this form of unnecessary blocking, we add the control lines 36-41.
+	
+	\item Taking advantage of inconsistent reads: let's consider two threads i and j, and that we perform read/write operation on safe registers. As long as j is in the bakery it performs no writes on number[j] thus, number[j] is stable and all reads to it must return the same value. If i reads two different values for number[j] while blocking during the spinning, it has proof that j was on the outside at least during one of these reads. Since i is the Bakery section at that point, it follows that i < j is true, and i can stop blocking on j and move on to test the next process.
+\end{itemize}
+
+The Boulangerie Lock satisfies mutual exlusion, deadlock freedom and starvation freedom properties and it is also fair, since if e.g. thread A executes the doorway before thread B then B is locked out while number[A] is greater than 0.
+
+
+\begin{minted}[
+	frame=lines,
+	framesep=2mm,
+	baselinestretch=.9,
+	fontsize=\footnotesize,
+	linenos,
+	breaklines
+	]
+	{C}
+#include "boulangerieLock.hpp"
+
+BoulangerieLock::BoulangerieLock (int numThreads) {
+	choosing = new bool[numThreads];
+	number = new int[numThreads];
+	num = new int[numThreads];
+	for (int i = 0; i < numThreads; i ++) {
+		choosing[i] = false;
+		number[i] = 0;
+		num[i] = 0;
+	}
+	n = numThreads;
+}
+
+BoulangerieLock::~BoulangerieLock () {
+	delete[] choosing;
+	delete[] number;
+	delete[] num;
+}
+
+void BoulangerieLock::lock () {
+	bool tmp_c = false;
+	int *prev_n = nullptr;
+	int *tmp_n = nullptr;
+	int limit = n;
+	int i = omp_get_thread_num();
+	
+	choosing[i] = true;
+	for(int j=0; j<n; j++){
+		num[i]=number[j];
+	}
+	num[i] = findMax() + 1;
+	number[i] = num[i];
+	choosing[i] = false;
+
+	if(number[i]==1){
+		limit = i;
+	}
+	else{
+		limit = n;
+	}
+	
+	for (int j = 0; j < limit; j++) {
+		if (j == i)
+			continue;
+		
+		do{ 
+			tmp_c = choosing[j];
+		} while(tmp_c);			
+		
+		tmp_n = nullptr;
+		
+		do{
+			prev_n = tmp_n; 
+			tmp_n = &number[j];
+		} while (*tmp_n != 0 && (num[i] > *tmp_n || (num[i] == *tmp_n && i > j)) && (tmp_n == prev_n || prev_n == nullptr));	 
+	} 
+}
+
+void BoulangerieLock::unlock () {
+	int i = omp_get_thread_num();
+	num[i] = false;
+	number[i] = false;
+}
+
+int BoulangerieLock::findMax() {
+	int m = num[0];
+	for (int k=1; k<n; ++k) {
+		if (num[k] > m)
+		m = num[k];
+	}
+	return m;
+}
+
+\end{minted}
+
+\subsection{Base Locks}
+
+\begin{minted}[
+	frame=lines,
+	framesep=2mm,
+	baselinestretch=1.0,
+	fontsize=\footnotesize,
+	linenos,
+	breaklines
+	]
+	{C}
+#include "tas.hpp"
+
+TestAndSetLock::TestAndSetLock(int n){
+	state=false;
+};
+
+TestAndSetLock::~TestAndSetLock(){}
+
+void TestAndSetLock::lock(){
+	while(state.exchange(true)){}
+};
+
+void TestAndSetLock::unlock(){
+	state.exchange(false);
+};
+\end{minted}
+
+\begin{minted}[
+	frame=lines,
+	framesep=2mm,
+	baselinestretch=1.0,
+	fontsize=\footnotesize,
+	linenos,
+	breaklines
+	]
+	{C}
+#include "ttas.hpp"
+
+TestAndTestAndSetLock::TestAndTestAndSetLock(int n){
+	state=false;
+};
+
+TestAndTestAndSetLock::~TestAndTestAndSetLock(){}
+
+void TestAndTestAndSetLock::lock(){
+	while(true){
+		while(state){}
+		if(!state.exchange(true))
+		return;
+	}
+};
+
+void TestAndTestAndSetLock::unlock(){
+	state.exchange(false);
+};
+\end{minted}

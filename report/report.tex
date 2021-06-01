@@ -29,12 +29,17 @@
 
 \usepackage{listings}
 \usepackage{color}
+\usepackage{minted}
+\usepackage{todonotes}
 
 \pagestyle{fancy}
 \fancyhf{}
 \rhead{12005483, 11717702}
 \lhead{Advanced Multiprocessor Programming}
 \rfoot{\thepage}
+
+\usepackage[backend=bibtex,style=numeric]{biblatex}
+\addbibresource{bibliography.bib}
 
 
 %-----------------------
@@ -99,5 +104,7 @@ pdfauthor = {Enrico Coluccia, Aron Wussler}
 
 \section{Performance}
 \input{performance}
+
+\printbibliography
 
 \end{document}

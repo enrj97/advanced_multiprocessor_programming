@@ -1,0 +1,14 @@
+Mutual exclusion is perhaps the most prevalent form of coordination in multiprocessor programming. In this report we analyze some mutual exclusion algorithms that work by reading and writing shared memory, called registers lock. In particular we present the results obtained on a 64-thread Cluster provided by the Technical University of Vienna (Nebula) related to the following register locks:
+
+\begin{itemize}
+	\item Filter Lock
+	\item Tournament tree of 2-thread Peterson locks
+	\item Herlihy-Shavit Bakery Lock
+	\item Lamport Bakery Lock
+	\item Boulangerie Lock
+\end{itemize}
+
+The results are compared with two baseline provided by the test-and-set and the test-and-test-and-set locks.
+
+
+...
