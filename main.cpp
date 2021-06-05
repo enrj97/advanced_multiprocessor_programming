@@ -39,13 +39,14 @@ int runLock(std::ofstream& dataCollector, BaseLock *lock, int nthreads)
 			lock->lock();
 			end = std::chrono::high_resolution_clock::now();
 
+			
 			writeBuffer
 				<< lock->get_name() << ","
 				<< nthreads << ","
 				<< counter << ","
 				<< tid << ","
 				<< std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << std::endl;
-
+			
 			counter++;
 			flag = counter < NUM_ITERATIONS;
 
