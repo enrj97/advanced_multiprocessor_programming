@@ -12,7 +12,8 @@ df[ , TimeDiff := Time - shift(Time), by = c("FullName", "ThreadNum")]
 setDF(df)
 
 df = df[!is.na(df$TimeDiff), ]
-df = df[df$TimeDiff < 100, ]
+df = df[df$TimeDiff < 2000, ]
+df = df[df$TimeDiff >= 0, ]
 
 for (level in levels(df$LockName)) {
   ggplot(df[df$LockName == level,], aes(x=ThreadFactor, y=TimeDiff)) + 
