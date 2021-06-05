@@ -22,12 +22,12 @@
 int runLock(std::ofstream& dataCollector, BaseLock *lock, int nthreads)
 {
 	int counter = 0;
-	int data[NUM_ITERATIONS][3];
+	int data[NUM_ITERATIONS][2];
 	omp_set_num_threads(nthreads);
 
 	std::cout << "Running " << lock->get_name() << " for " << nthreads << " threads" << std::endl;
 
-	#pragma omp parallel shared(counter, data, nthreads)
+	#pragma omp parallel shared(counter, data)
 	{
 		std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
 		int tid = omp_get_thread_num();
@@ -42,9 +42,8 @@ int runLock(std::ofstream& dataCollector, BaseLock *lock, int nthreads)
 				break;
 			}
 
-			data[counter][0] = nthreads;
-			data[counter][1] = tid;
-			data[counter][2] = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+			data[counter][0] = tid;
+			data[counter][1] = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
 
 			counter++;
 			lock->unlock();
@@ -55,9 +54,9 @@ int runLock(std::ofstream& dataCollector, BaseLock *lock, int nthreads)
 		dataCollector
 			<< "\"" << lock->get_name() << "\","
 			<< i << ","
+			<< nthreads << ","
 			<< data[i][0] << ","
-			<< data[i][1] << ","
-			<< data[i][2] << std::endl << std::flush;
+			<< data[i][1] << std::endl << std::flush;
 	}
 
 	return EXIT_SUCCESS;
