@@ -22,12 +22,12 @@
 int runLock(std::ofstream& dataCollector, BaseLock *lock, int nthreads)
 {
 	int counter = 0;
-	std::stringstream writeBuffer;
-	omp_set_num_threads(nthreads); // Use 4 threads for all consecutive parallel region
+	int data[NUM_ITERATIONS][4];
+	omp_set_num_threads(nthreads);
 
 	std::cout << "Running " << lock->get_name() << " for " << nthreads << " threads" << std::endl;
 
-	#pragma omp parallel shared(counter, writeBuffer)
+	#pragma omp parallel shared(counter, data)
 	{
 		std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
 		int tid = omp_get_thread_num();
@@ -42,19 +42,23 @@ int runLock(std::ofstream& dataCollector, BaseLock *lock, int nthreads)
 				break;
 			}
 
-			writeBuffer
-				<< "\"" << lock->get_name() << "\","
-				<< nthreads << ","
-				<< counter << ","
-				<< tid << ","
-				<< std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << std::endl;
+			data[counter][0] = nthreads;
+			data[counter][1] = tid;
+			data[counter][2] = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
 
 			counter++;
 			lock->unlock();
 		}
 	}
 
-	dataCollector << writeBuffer.rdbuf() << std::flush;
+	for (int i = 0; i < NUM_ITERATIONS; i++) {
+		dataCollector
+			<< "\"" << lock->get_name() << "\","
+			<< i << ","
+			<< data[i][0] << ","
+			<< data[i][1] << ","
+			<< data[i][2] << std::endl << std::flush;
+	}
 
 	return EXIT_SUCCESS;
 }

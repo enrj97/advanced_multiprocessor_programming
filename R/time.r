@@ -2,8 +2,8 @@ require(ggplot2)
 require(data.table)
 
 # Load data
-df = read.csv('../locks.csv', header = FALSE, sep = ",", quote = "\"", dec = ".")
-colnames(df) = c("LockName", "NumThreads", "Count", "ThreadNum", "Time");
+df = read.csv('../nebula.csv', header = FALSE, sep = ",", quote = "\"", dec = ".")
+colnames(df) = c("LockName", "Count", "NumThreads", "ThreadNum", "Time");
 df$FullName = paste(df$LockName, "-", df$NumThreads, sep = " ")
 df$ThreadFactor = as.factor(df$NumThreads)
 
