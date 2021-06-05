@@ -15,6 +15,10 @@
 
 #define NUM_ITERATIONS 1024
 
+#define THREAD_INIT 2
+#define THREAD_MAX 64
+#define THREAD_INCREMENT 2
+
 int runLock(std::ofstream& dataCollector, BaseLock *lock, int nthreads)
 {
 	int counter = 0;
@@ -73,42 +77,42 @@ int main(int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 
-	for (nthreads = 2; nthreads <= 8; nthreads += 2) {
+	for (nthreads = THREAD_INIT; nthreads <= THREAD_MAX; nthreads += THREAD_INCREMENT) {
 		BoulangerieLock lock(nthreads);
 		if (runLock(dataCollector, &lock, nthreads) != EXIT_SUCCESS) {
 			return EXIT_FAILURE;
 		}
 	}
 
-	for (nthreads = 2; nthreads <= 8; nthreads += 2) {
+	for (nthreads = THREAD_INIT; nthreads <= THREAD_MAX; nthreads += THREAD_INCREMENT) {
 		BakeryLock lock(nthreads);
 		if (runLock(dataCollector, &lock, nthreads) != EXIT_SUCCESS) {
 			return EXIT_FAILURE;
 		}
 	}
 
-	for (nthreads = 2; nthreads <= 8; nthreads += 2) {
+	for (nthreads = THREAD_INIT; nthreads <= THREAD_MAX; nthreads += THREAD_INCREMENT) {
 		FilterLock lock(nthreads);
 		if (runLock(dataCollector, &lock, nthreads) != EXIT_SUCCESS) {
 			return EXIT_FAILURE;
 		}
 	}
 
-	for (nthreads = 2; nthreads <= 8; nthreads += 2) {
+	for (nthreads = THREAD_INIT; nthreads <= THREAD_MAX; nthreads += THREAD_INCREMENT) {
 		LamportLock lock(nthreads);
 		if (runLock(dataCollector, &lock, nthreads) != EXIT_SUCCESS) {
 			return EXIT_FAILURE;
 		}
 	}
 
-	for (nthreads = 2; nthreads <= 8; nthreads += 2) {
+	for (nthreads = THREAD_INIT; nthreads <= THREAD_MAX; nthreads += THREAD_INCREMENT) {
 		TestAndSetLock lock(nthreads);
 		if (runLock(dataCollector, &lock, nthreads) != EXIT_SUCCESS) {
 			return EXIT_FAILURE;
 		}
 	}
 
-	for (nthreads = 2; nthreads <= 8; nthreads += 2) {
+	for (nthreads = THREAD_INIT; nthreads <= THREAD_MAX; nthreads += THREAD_INCREMENT) {
 		TestAndTestAndSetLock lock(nthreads);
 		if (runLock(dataCollector, &lock, nthreads) != EXIT_SUCCESS) {
 			return EXIT_FAILURE;
