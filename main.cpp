@@ -22,7 +22,7 @@
 int runLock(std::ofstream& dataCollector, BaseLock *lock, int nthreads)
 {
 	int counter = 0;
-	int data[NUM_ITERATIONS][4];
+	int data[NUM_ITERATIONS][3];
 	omp_set_num_threads(nthreads);
 
 	std::cout << "Running " << lock->get_name() << " for " << nthreads << " threads" << std::endl;
