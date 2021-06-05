@@ -24,15 +24,15 @@ int runLock(std::ofstream& dataCollector, BaseLock *lock, int nthreads)
 	int counter = 0;
 	int data[NUM_ITERATIONS][2];
 	omp_set_num_threads(nthreads);
+	std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
+	start = std::chrono::high_resolution_clock::now();
 
 	std::cout << "Running " << lock->get_name() << " for " << nthreads << " threads" << std::endl;
 
-	#pragma omp parallel shared(counter, data)
+	#pragma omp parallel shared(counter, data, start, end)
 	{
-		std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
 		int tid = omp_get_thread_num();
 
-		start = std::chrono::high_resolution_clock::now();
 		while(1) {
 			lock->lock();
 			end = std::chrono::high_resolution_clock::now();
