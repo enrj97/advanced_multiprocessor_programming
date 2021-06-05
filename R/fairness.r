@@ -21,3 +21,6 @@ ggplot(data=fairAggregate, aes(x=NumThreads, y=Unfairness, group=LockName, colou
   geom_point()
 
 ggsave(paste("../report/fig/fairness_", "all", ".pdf", sep=""), height=8, width=12, dpi=1000)
+
+# Check that all have 1024 iterations
+aggregate(fair$Count, list(fair$LockName, fair$NumThreads), FUN = sum)
