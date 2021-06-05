@@ -31,27 +31,27 @@ int runLock(std::ofstream& dataCollector, BaseLock *lock, int nthreads)
 	{
 		std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
 		int tid = omp_get_thread_num();
-		bool flag = true;
 
 		start = std::chrono::high_resolution_clock::now();
-
-		do {
+		while(1) {
 			lock->lock();
 			end = std::chrono::high_resolution_clock::now();
 
-			
+			if (counter >= NUM_ITERATIONS) {
+				lock->unlock();
+				break;
+			}
+
 			writeBuffer
-				<< lock->get_name() << ","
+				<< "\"" << lock->get_name() << "\","
 				<< nthreads << ","
 				<< counter << ","
 				<< tid << ","
 				<< std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << std::endl;
-			
-			counter++;
-			flag = counter < NUM_ITERATIONS;
 
+			counter++;
 			lock->unlock();
-		} while (flag);
+		}
 	}
 
 	dataCollector << writeBuffer.rdbuf() << std::flush;
