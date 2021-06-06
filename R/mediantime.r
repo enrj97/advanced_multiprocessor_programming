@@ -3,11 +3,11 @@ require(data.table)
 
 # Load data
 df = read.csv('../nebula.csv', header = FALSE, sep = ",", quote = "\"", dec = ".")
-colnames(df) = c("LockName", "Count", "NumThreads", "ThreadNum", "Time");
+colnames(df) = c("LockName", "Iteration", "Count", "NumThreads", "ThreadNum", "Time");
 df$FullName = paste(df$LockName, "-", df$NumThreads, sep = " ")
 
 setDT(df)
-df[ , TimeDiff := Time - shift(Time), by = c("FullName")]
+df[ , TimeDiff := Time - shift(Time), by = c("FullName", "Iteration")]
 setDF(df)
 
 df = df[!is.na(df$TimeDiff), ]
