@@ -23,7 +23,7 @@
 int runLock(std::ofstream& dataCollector, BaseLock *lock, int iteration, int nthreads)
 {
 	int counter = 0;
-	int data[NUM_LOCK_OP][2];
+	unsigned int data[NUM_LOCK_OP][2];
 	omp_set_num_threads(nthreads);
 	std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
 	start = std::chrono::high_resolution_clock::now();
@@ -39,8 +39,8 @@ int runLock(std::ofstream& dataCollector, BaseLock *lock, int iteration, int nth
 				break;
 			}
 
-			data[counter][0] = omp_get_thread_num();
-			data[counter][1] = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+			data[counter][0] = (unsigned int) omp_get_thread_num();
+			data[counter][1] = (unsigned int) std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
 
 			counter++;
 			lock->unlock();
