@@ -30,8 +30,6 @@ int runLock(std::ofstream& dataCollector, BaseLock *lock, int iteration, int nth
 
 	#pragma omp parallel shared(counter, data, start, end)
 	{
-		int tid = omp_get_thread_num();
-
 		while(1) {
 			lock->lock();
 			end = std::chrono::high_resolution_clock::now();
@@ -41,7 +39,7 @@ int runLock(std::ofstream& dataCollector, BaseLock *lock, int iteration, int nth
 				break;
 			}
 
-			data[counter][0] = tid;
+			data[counter][0] = omp_get_thread_num();
 			data[counter][1] = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
 
 			counter++;

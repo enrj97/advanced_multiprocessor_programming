@@ -3,7 +3,6 @@ lock
 
 # Collected data
 *.csv
-!nebula.csv
 
 # Prerequisites
 *.d
