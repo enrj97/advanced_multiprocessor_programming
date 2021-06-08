@@ -1,5 +1,8 @@
 require(ggplot2)
 
+# 256 runs for 128 batches
+totalRuns = 256*128
+
 # Load data
 df = read.csv('../nebula.csv', header = FALSE, sep = ",", quote = "\"", dec = ".")
 colnames(df) = c("LockName", "Iteration", "Count", "NumThreads", "ThreadNum", "Time");
@@ -9,11 +12,11 @@ fair = aggregate(df$Count, list(df$LockName, df$NumThreads, df$ThreadNum), FUN=l
 colnames(fair) = c("LockName", "NumThreads", "ThreadNum", "Count");
 fair = fair[fair$ThreadNum < fair$NumThreads,]
 fair[is.na(fair$Count), "Count"] = 0
-fair$Unfairness = fair$Count * fair$NumThreads / (128)
+fair$Unfairness = fair$Count * fair$NumThreads / totalRuns
 
 fairAggregate = aggregate(fair$Unfairness, list(fair$LockName, fair$NumThreads), FUN = sd)
 colnames(fairAggregate) = c("LockName", "NumThreads", "Unfairness");
-fairAggregate$Unfairness = fairAggregate$Unfairness / (sqrt(fairAggregate$NumThreads) * 128)
+fairAggregate$Unfairness = fairAggregate$Unfairness / sqrt(fairAggregate$NumThreads)
 
 ggplot(data=fairAggregate, aes(x=NumThreads, y=Unfairness, group=LockName, colour=LockName)) +
   geom_line()+

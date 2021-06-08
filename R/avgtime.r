@@ -1,7 +1,7 @@
 require(ggplot2)
 require(data.table)
 
-mean.trim = function(x) {mean(x, trim = 0.02)}
+mean.trim = function(x) {mean(x, trim = 0.05)}
   
 # Load data
 df = read.csv('../nebula.csv', header = FALSE, sep = ",", quote = "\"", dec = ".")
@@ -20,8 +20,7 @@ colnames(avgtime) = c("LockName", "NumThreads", "Time");
 ggplot(data=avgtime, aes(x=NumThreads, y=Time, group=LockName, colour=LockName)) +
   geom_line() +
   geom_point() +
-  ylab("0.02-trimmed mean time between consecutive lock() in ns") +
+  ylab("0.05-trimmed mean time between consecutive lock() in ns") +
   xlab("Number of threads") 
 
 ggsave(paste("../report/fig/meantime_", "all", ".pdf", sep=""), height=8, width=12, dpi=1000)
-
