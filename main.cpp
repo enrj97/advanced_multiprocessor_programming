@@ -13,7 +13,7 @@
 #include "locks/tas.hpp"
 #include "locks/ttas.hpp"
 
-#define NUM_LOCK_OP 128
+#define NUM_LOCK_OP 256
 #define NUM_LOCK_CYCLES 128
 
 #define THREAD_INIT 2
