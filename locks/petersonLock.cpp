@@ -7,7 +7,7 @@ PetersonLock::PetersonLock(int n){
 	std::vector<PetersonNode*> initList;
 	initList.push_back(root);
 
-	leaves = growLockTree(initList);
+	leaves = createTree(initList);
 
 }
 
@@ -16,7 +16,7 @@ PetersonLock::~PetersonLock(){
 
 void PetersonLock::lock() {
 	int i = omp_get_thread_num();
-	PetersonNode* currentNode = leafLockForThread(i);
+	PetersonNode* currentNode = getLeaf(i);
 
 	while (currentNode != NULL) {
 		currentNode->lock();
@@ -28,7 +28,7 @@ void PetersonLock::lock() {
 // actually more performant to do it this way.
 void PetersonLock::unlock() {
 	int i = omp_get_thread_num();
-	PetersonNode* currentNode = leafLockForThread(i);
+	PetersonNode* currentNode = getLeaf(i);
 
 	while (currentNode != NULL) {
 		currentNode->unlock();
@@ -61,5 +61,5 @@ std::vector<PetersonNode*> PetersonLock::createTree(std::vector<PetersonNode*> n
 	}
 
 	// Recurse, passing our current leaves back to the function
-	return growLockTree(currentLeaves);
+	return createTree(currentLeaves);
 }

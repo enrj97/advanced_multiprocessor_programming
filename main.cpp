@@ -14,7 +14,7 @@
 #include "locks/ttas.hpp"
 
 #define NUM_LOCK_OP 256
-#define NUM_LOCK_CYCLES 128
+#define NUM_LOCK_CYCLES 1
 
 #define THREAD_INIT 2
 #define THREAD_MAX 64
@@ -90,9 +90,11 @@ int main(int argc, char *argv[])
 	omp_set_dynamic(0);     // Explicitly disable dynamic teams
 
 
-	PetersonLock lock(2);
-	if (runMultipleLock(dataCollector, &lock, 2) != EXIT_SUCCESS) {
-		return EXIT_FAILURE;
+	for (nthreads = THREAD_INIT; nthreads <= THREAD_MAX; nthreads *= THREAD_INCREMENT) {
+		PetersonLock lock(nthreads);
+		if (runMultipleLock(dataCollector, &lock, nthreads) != EXIT_SUCCESS) {
+			return EXIT_FAILURE;
+		}
 	}
 
 	for (nthreads = THREAD_INIT; nthreads <= THREAD_MAX; nthreads += THREAD_INCREMENT) {
