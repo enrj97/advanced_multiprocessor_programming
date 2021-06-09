@@ -8,7 +8,7 @@ df = read.csv('../nebula.csv', header = FALSE, sep = ",", quote = "\"", dec = ".
 colnames(df) = c("LockName", "Iteration", "Count", "NumThreads", "ThreadNum", "Time");
 df$FullName = paste(df$LockName, "-", df$NumThreads, sep = " ")
 
-fair = aggregate(df$Count, list(df$LockName, df$NumThreads, df$ThreadNum), FUN=length, drop=FALSE)
+fair = aggregate(df$Count, list(df$LockName, df$NumThreads, df$ThreadNum), FUN=length, drop=TRUE)
 colnames(fair) = c("LockName", "NumThreads", "ThreadNum", "Count");
 fair = fair[fair$ThreadNum < fair$NumThreads,]
 fair[is.na(fair$Count), "Count"] = 0
