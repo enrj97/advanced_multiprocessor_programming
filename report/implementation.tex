@@ -1,3 +1,9 @@
+\subsection{Setup}
+
+Description of main task, CS etc..
+...
+...
+
 \subsection{Filter Lock}
 The Filter lock is a generalized version of the Peterson lock, it creates n-1 "waiting rooms", or levels,
 that a thread must traverse before acquiring the lock. Levels satisfy two important properties:
@@ -51,11 +57,9 @@ void FilterLock::unlock() {
 \end{minted}
 
 \subsection{Tournament tree of 2-thread Peterson locks}
-Another way to generalize the Peterson lock is to arrange a number of 2-thread locks in a binary tree. Suppose n is a power of two. Each thread is assigned a leaf lock which it shares with one other thread. Each lock
-treats one thread as thread 0 and the other as thread 1.
+Since the Peterson Lock works for a 2-thread implementation, a way to generalize it is to arrange a number of 2-thread locks in a binary tree. Suppose n is a power of two. Each thread is assigned a leaf lock which it shares with one other thread. Each lock treats one thread as thread 0 and the other as thread 1.
 
-In the tree-lock’s acquire method, the thread acquires every two-thread Peterson lock fromthat thread’s leaf to the root. The tree-lock’s release method for
-the tree-lock unlocks each of the 2-thread Peterson locks that thread has acquired, from the root back to its leaf.
+In the tree-lock’s acquire method, the thread acquires every two-thread Peterson lock fromthat thread’s leaf to the root. The tree-lock’s release method for the tree-lock unlocks each of the 2-thread Peterson locks that thread has acquired, from the root back to its leaf.
 
 The Tournament tree of 2-thread Peterson locks satisfies mutual exlusion, deadlock freedom and starvation freedom properties but it is not fair since a thread can be delayed and overtaken an arbitrary number of times(see the Exercise 12 from the book).
 
@@ -72,12 +76,11 @@ The Tournament tree of 2-thread Peterson locks satisfies mutual exlusion, deadlo
 \end{minted}
 
 \subsection{Herlihy-Shavit Bakery Lock}
-This is a modified version of the original Lamport's Bakery Lock implementation. In this lock, flag[i] is a Boolean flag indicating whether i wants to
+The Herlihy-Shavit Bakery Lock is a modified version of the original Lamport's Bakery Lock implementation. In this lock, flag[i] is a Boolean flag indicating whether i wants to
 enter the critical section, and label[i] is an integer that indicates the thread’s order when entering the bakery, for each thread i.
 
 Each time a thread acquires a lock, it generates a new label[] in two steps. First, it reads all the other threads’ labels in any order. Second, it reads all the other
-threads’ labels one after the other (this can be done in some arbitrary order) and
-generates a label greater by one than the maximal label it read. We call the code from the raising of the flag (Line 19) to the writing of the new label[] (Line 30)
+threads’ labels one after the other (this can be done in some arbitrary order) and generates a label greater by one than the maximal label it read. We call the code from the raising of the flag (Line 19) to the writing of the new label[] (Line 30)
 the doorway. 
 It establishes that thread’s order with respect to the other threads trying to acquire the lock. If two threads execute their doorways concurrently, they may read the same maximal label and pick the same new label. To break this symmetry, the algorithm uses a lexicographical ordering << on pairs of label[] and thread ids at line 36, each thread read the labels one after the other in some arbitrary order until it determines that no
 thread with a raised flag has a lexicographically smaller label/id pair, then it enters the critical section.
@@ -302,6 +305,14 @@ int BoulangerieLock::findMax() {
 \end{minted}
 
 \subsection{Base Locks}
+For a baseline performance we consider three additional locks:
+\begin{itemize}
+	\item Test-and-Set Lock: has a single flag field per lock, the thread acquire lock by changing
+	flag from false to true and it locks on success. To unlock it resets the flag. We know from the theory (see slides) that the performance of this lock is bad, due to the high memory contention. The lock is not fair and starvation free but it is fault tolerant.
+	\item Test-and-Test-Set Lock: we test and set only if there is a chance of success. It has a better performance than TAS but memory contention and cache deletion problems are still present. The lock is not fair and starvation free but it is fault tolerant.
+	\item Native OpenMP locks
+\end{itemize}
+
 
 \begin{minted}[
 	frame=lines,
@@ -357,4 +368,25 @@ void TestAndTestAndSetLock::lock(){
 void TestAndTestAndSetLock::unlock(){
 	state.exchange(false);
 };
+\end{minted}
+
+\begin{minted}[
+	frame=lines,
+	framesep=2mm,
+	baselinestretch=1.0,
+	fontsize=\footnotesize,
+	linenos,
+	breaklines
+	]
+	{C}
+#include <omp.h>	
+
+omp_lock_t mylock ;
+omp_init_lock(&mylock ) ;
+
+omp_set_lock(&writelock);
+
+//critical section
+
+omp_unset_lock(&writelock);
 \end{minted}
