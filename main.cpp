@@ -37,12 +37,18 @@ int runLock(std::ofstream& dataCollector, BaseLock *lock, int iteration, int nth
 		while(counter <= lock_iterations) {
 			lock->lock();
 			counter++;
-			thread_counter[tid]++;
 
 			if (counter == lock_iterations) {
 				end = std::chrono::high_resolution_clock::now();
 				duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
 			}
+
+			if (counter >= lock_iterations) {
+				lock->unlock();
+				break;
+			}
+
+			thread_counter[tid]++;
 
 			lock->unlock();
 		}
