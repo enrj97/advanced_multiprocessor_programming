@@ -21,7 +21,7 @@
 #define THREAD_MAX 64
 #define THREAD_INCREMENT 2
 
-int runLock(std::ofstream& dataCollector, BaseLock *lock, int iteration, int nthreads, int lock_iterations)
+int runLock(std::ofstream& dataCollector, BaseLock *lock, int iteration, int nthreads, int lock_iterations, int cs_iterations)
 {
 	int counter = 0, duration;
 	int thread_counter[THREAD_MAX] = {0};
@@ -49,7 +49,7 @@ int runLock(std::ofstream& dataCollector, BaseLock *lock, int iteration, int nth
 				break;
 			}
 			
-			for(int cs=0; cs<NUM_CS_CYCLES; ++cs){/*wait*/}
+			for(int cs=0; cs<cs_iterations; ++cs){/*wait*/}
 
 			thread_counter[tid]++;
 
@@ -70,13 +70,13 @@ int runLock(std::ofstream& dataCollector, BaseLock *lock, int iteration, int nth
 	return EXIT_SUCCESS;
 }
 
-int runMultipleLock(std::ofstream& dataCollector, BaseLock *lock, int nthreads, int loop_iterations, int lock_iterations)
+int runMultipleLock(std::ofstream& dataCollector, BaseLock *lock, int nthreads, int loop_iterations, int lock_iterations, int cs_iterations)
 {
 	std::cout << "Running " << lock->get_name() << " for " << nthreads << " threads";
 
 	for (int i = 0; i < loop_iterations; i++) {
 		std::cout << ".";
-		if (runLock(dataCollector, lock, i, nthreads, lock_iterations) == EXIT_FAILURE) {
+		if (runLock(dataCollector, lock, i, nthreads, lock_iterations, cs_iterations) == EXIT_FAILURE) {
 			return EXIT_FAILURE;
 		}
 	}
@@ -88,10 +88,10 @@ int runMultipleLock(std::ofstream& dataCollector, BaseLock *lock, int nthreads, 
 
 int main(int argc, char *argv[])
 {
-	int nthreads, lock_iterations, loop_iterations;
+	int nthreads, lock_iterations, loop_iterations, cs_iterations;
 
 	if (argc != 5) {
-		printf("Usage: lock [out filename] [outer iterations] [inner iterations] [cs delay]\n");
+		printf("Usage: lock [out filename] [outer iterations] [inner iterations] [cs iterations]\n");
 		exit(EXIT_FAILURE);
 	}
 
@@ -99,9 +99,10 @@ int main(int argc, char *argv[])
 	std::ofstream dataCollector(argv[1], std::ios::binary | std::ios::trunc);
 	std::istringstream loop_ss( argv[2] );
 	std::istringstream lock_ss( argv[3] );
+	std::istringstream lock_ss( argv[4] );
 
-	if (!(loop_ss >> loop_iterations) || !(lock_ss >> lock_iterations)){
-		printf("Usage: lock [out filename] [outer iterations] [inner iterations]\n");
+	if (!(loop_ss >> loop_iterations) || !(lock_ss >> lock_iterations) ||  !(lock_ss >> cs_iterations)){
+		printf("Usage: lock [out filename] [outer iterations] [inner iterations] [cs iterations]\n");
 		exit(EXIT_FAILURE);
 	}
 
@@ -110,49 +111,49 @@ int main(int argc, char *argv[])
 
 	for (nthreads = THREAD_INIT; nthreads <= THREAD_MAX; nthreads *= THREAD_INCREMENT) {
 		PetersonLock lock(nthreads);
-		if (runMultipleLock(dataCollector, &lock, nthreads, loop_iterations, lock_iterations) != EXIT_SUCCESS) {
+		if (runMultipleLock(dataCollector, &lock, nthreads, loop_iterations, lock_iterations, cs_iterations) != EXIT_SUCCESS) {
 			return EXIT_FAILURE;
 		}
 	}
 
 	for (nthreads = THREAD_INIT; nthreads <= THREAD_MAX; nthreads += THREAD_INCREMENT) {
 		BoulangerieLock lock(nthreads);
-		if (runMultipleLock(dataCollector, &lock, nthreads, loop_iterations, lock_iterations) != EXIT_SUCCESS) {
+		if (runMultipleLock(dataCollector, &lock, nthreads, loop_iterations, lock_iterations, cs_iterations) != EXIT_SUCCESS) {
 			return EXIT_FAILURE;
 		}
 	}
 
 	for (nthreads = THREAD_INIT; nthreads <= THREAD_MAX; nthreads += THREAD_INCREMENT) {
 		BakeryLock lock(nthreads);
-		if (runMultipleLock(dataCollector, &lock, nthreads, loop_iterations, lock_iterations) != EXIT_SUCCESS) {
+		if (runMultipleLock(dataCollector, &lock, nthreads, loop_iterations, lock_iterations, cs_iterations) != EXIT_SUCCESS) {
 			return EXIT_FAILURE;
 		}
 	}
 
 	for (nthreads = THREAD_INIT; nthreads <= THREAD_MAX; nthreads += THREAD_INCREMENT) {
 		FilterLock lock(nthreads);
-		if (runMultipleLock(dataCollector, &lock, nthreads, loop_iterations, lock_iterations) != EXIT_SUCCESS) {
+		if (runMultipleLock(dataCollector, &lock, nthreads, loop_iterations, lock_iterations, cs_iterations) != EXIT_SUCCESS) {
 			return EXIT_FAILURE;
 		}
 	}
 
 	for (nthreads = THREAD_INIT; nthreads <= THREAD_MAX; nthreads += THREAD_INCREMENT) {
 		LamportLock lock(nthreads);
-		if (runMultipleLock(dataCollector, &lock, nthreads, loop_iterations, lock_iterations) != EXIT_SUCCESS) {
+		if (runMultipleLock(dataCollector, &lock, nthreads, loop_iterations, lock_iterations, cs_iterations) != EXIT_SUCCESS) {
 			return EXIT_FAILURE;
 		}
 	}
 
 	for (nthreads = THREAD_INIT; nthreads <= THREAD_MAX; nthreads += THREAD_INCREMENT) {
 		TestAndSetLock lock(nthreads);
-		if (runMultipleLock(dataCollector, &lock, nthreads, loop_iterations, lock_iterations) != EXIT_SUCCESS) {
+		if (runMultipleLock(dataCollector, &lock, nthreads, loop_iterations, lock_iterations, cs_iterations) != EXIT_SUCCESS) {
 			return EXIT_FAILURE;
 		}
 	}
 
 	for (nthreads = THREAD_INIT; nthreads <= THREAD_MAX; nthreads += THREAD_INCREMENT) {
 		TestAndTestAndSetLock lock(nthreads);
-		if (runMultipleLock(dataCollector, &lock, nthreads, loop_iterations, lock_iterations) != EXIT_SUCCESS) {
+		if (runMultipleLock(dataCollector, &lock, nthreads, loop_iterations, lock_iterations, cs_iterations) != EXIT_SUCCESS) {
 			return EXIT_FAILURE;
 		}
 	}
