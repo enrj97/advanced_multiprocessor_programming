@@ -99,13 +99,15 @@ int main(int argc, char *argv[])
 	std::ofstream dataCollector(argv[1], std::ios::binary | std::ios::trunc);
 	std::istringstream loop_ss( argv[2] );
 	std::istringstream lock_ss( argv[3] );
-	std::istringstream lock_ss( argv[4] );
+	std::istringstream cs_ss( argv[4] );
 
-	if (!(loop_ss >> loop_iterations) || !(lock_ss >> lock_iterations) ||  !(lock_ss >> cs_iterations)){
+	if (!(loop_ss >> loop_iterations) || !(lock_ss >> lock_iterations) ||  !(cs_ss >> cs_iterations)){
 		printf("Usage: lock [out filename] [outer iterations] [inner iterations] [cs iterations]\n");
 		exit(EXIT_FAILURE);
 	}
-
+	
+	std::cout << loop_iterations << " " << lock_iterations << " " << cs_iterations << std::endl;
+	
 	omp_set_dynamic(0);     // Explicitly disable dynamic teams
 
 
