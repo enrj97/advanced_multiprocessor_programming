@@ -15,6 +15,7 @@
 
 #define NUM_LOCK_OP 256
 #define NUM_LOCK_CYCLES 128
+#define NUM_CS_CYCLES 128
 
 #define THREAD_INIT 2
 #define THREAD_MAX 64
@@ -47,6 +48,8 @@ int runLock(std::ofstream& dataCollector, BaseLock *lock, int iteration, int nth
 				lock->unlock();
 				break;
 			}
+			
+			for(int cs=0; cs<NUM_CS_CYCLES; ++cs){/*wait*/}
 
 			thread_counter[tid]++;
 
@@ -87,8 +90,8 @@ int main(int argc, char *argv[])
 {
 	int nthreads, lock_iterations, loop_iterations;
 
-	if (argc != 4) {
-		printf("Usage: lock [out filename] [outer iterations] [inner iterations]\n");
+	if (argc != 5) {
+		printf("Usage: lock [out filename] [outer iterations] [inner iterations] [cs delay]\n");
 		exit(EXIT_FAILURE);
 	}
 
