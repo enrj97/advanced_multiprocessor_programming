@@ -24,7 +24,7 @@ df$Unfairness = df$SD / df$Count * sqrt(df$NumThreads)
 fair = aggregate(df$Unfairness, list(df$LockName, df$NumThreads), FUN = mean)
 colnames(fair) = c("LockName", "NumThreads", "Unfairness");
 
-ggplot(data=fair, aes(x=NumThreads, y=Unfairness, group=LockName, colour=LockName)) +
+ggplot(data=fair, aes(x=NumThreads, y=Unfairness, group=LockName, colour=LockName, shape=LockName)) +
   geom_line()+
   geom_point()
 
@@ -34,7 +34,7 @@ fair = fair[fair$LockName != "TTAS Lock",]
 fair = fair[fair$LockName != "TAS Lock",]
 fair = fair[fair$LockName != "NativeOmpLock",]
 
-ggplot(data=fair, aes(x=NumThreads, y=Unfairness, group=LockName, colour=LockName)) +
+ggplot(data=fair, aes(x=NumThreads, y=Unfairness, group=LockName, colour=LockName, shape=LockName)) +
   geom_line()+
   geom_point()
 
