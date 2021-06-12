@@ -1,8 +1,9 @@
 #include "nativeOmpLock.hpp"
 
-NativeOmpLock::NativeOmpLock () {
+NativeOmpLock::NativeOmpLock (int n) {
 	omp_init_lock(&lck);
 }
+
 NativeOmpLock::~NativeOmpLock () {
 	omp_destroy_lock(&lck);
 }

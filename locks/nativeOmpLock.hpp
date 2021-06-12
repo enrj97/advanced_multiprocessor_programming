@@ -13,7 +13,7 @@ class NativeOmpLock: public BaseLock  {
     omp_lock_t lck;
 
   public:
-    NativeOmpLock();
+    NativeOmpLock(int n);
     ~NativeOmpLock();
     void lock();
     void unlock();

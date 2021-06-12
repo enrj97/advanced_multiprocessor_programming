@@ -3,8 +3,8 @@ CFLAGS = -Wall -g -fopenmp -std=c++11
 
 all: lock
 
-lock: main.o filterLock.o bakeryLock.o lamportLock.o boulangerieLock.o petersonNode.o tas.o ttas.o petersonLock.o nativeOmpLock.o
-	$(CC) $(CFLAGS) -o lock main.o filterLock.o bakeryLock.o lamportLock.o boulangerieLock.o petersonNode.o tas.o ttas.o petersonLock.o nativeOmpLock.o
+lock: main.o filterLock.o bakeryLock.o lamportLock.o boulangerieLock.o petersonNode.o tas.o ttas.o petersonLock.o nativeOmpLock.o 
+	$(CC) $(CFLAGS) -o lock main.o filterLock.o bakeryLock.o lamportLock.o boulangerieLock.o petersonNode.o tas.o ttas.o petersonLock.o nativeOmpLock.o && rm -rf *.o
 
 main.o: main.cpp
 	$(CC) $(CFLAGS) -c main.cpp
@@ -33,7 +33,7 @@ tas.o: locks/tas.hpp
 ttas.o: locks/ttas.hpp 
 	$(CC) $(CFLAGS) -c locks/ttas.cpp
 
-nativeOmpLock: locks/nativeOmpLock.hpp	
+nativeOmpLock.o: locks/nativeOmpLock.hpp	
 	$(CC) $(CFLAGS) -c locks/nativeOmpLock.cpp
 
 clean:
