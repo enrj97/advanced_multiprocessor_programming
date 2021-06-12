@@ -8,7 +8,6 @@ PetersonLock::PetersonLock(int n){
 	initList.push_back(root);
 
 	leaves = createTree(initList);
-
 }
 
 PetersonLock::~PetersonLock(){
@@ -24,8 +23,6 @@ void PetersonLock::lock() {
 	}
 }
 
-// Unlock the nodes. I also tried doing this in reverse, but it was
-// actually more performant to do it this way.
 void PetersonLock::unlock() {
 	int i = omp_get_thread_num();
 	PetersonNode* currentNode = getLeaf(i);

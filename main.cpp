@@ -12,6 +12,7 @@
 #include "locks/petersonLock.hpp"
 #include "locks/tas.hpp"
 #include "locks/ttas.hpp"
+#include "locks/nativeOmpLock.hpp"
 
 #define THREAD_INIT 2
 #define THREAD_MAX 64
@@ -172,6 +173,13 @@ int main(int argc, char *argv[])
 
 	for (nthreads = THREAD_INIT; nthreads <= THREAD_MAX; nthreads += THREAD_INCREMENT) {
 		TestAndTestAndSetLock lock(nthreads);
+		if (runMultipleLock(dataCollector, &lock, nthreads, loop_iterations, lock_iterations, cs_iterations) != EXIT_SUCCESS) {
+			return EXIT_FAILURE;
+		}
+	}
+
+	for (nthreads = THREAD_INIT; nthreads <= THREAD_MAX; nthreads += THREAD_INCREMENT) {
+		NativeOmpLock lock(nthreads);
 		if (runMultipleLock(dataCollector, &lock, nthreads, loop_iterations, lock_iterations, cs_iterations) != EXIT_SUCCESS) {
 			return EXIT_FAILURE;
 		}
