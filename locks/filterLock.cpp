@@ -3,6 +3,9 @@
 FilterLock::FilterLock (int num) {
   level = new int[num];
   victim = new int[num];
+  for (int i = 0; i < num; i++) {
+      level[i] = 0;
+    }
   n = num;
 }
 
