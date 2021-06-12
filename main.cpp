@@ -117,7 +117,7 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	dataCollector << "\"LockName\", \"Iteration\", \"ThreadNum\", \"NumThreads\", \"Time\", \"Count\"";
+	dataCollector << "\"LockName\", \"Iteration\", \"ThreadNum\", \"NumThreads\", \"Time\"";
 	for (int i = 0; i < THREAD_MAX; i++) {
 		dataCollector << ", \"Thread " << i << "\"";
 	}
