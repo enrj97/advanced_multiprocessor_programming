@@ -1,38 +1,41 @@
 require(ggplot2)
+library(matrixStats)
 
-# 1024 runs for 128 batches
-totalRuns = 1024*128
+threads = c()
+for (i in 0:63) {
+  threads = append(threads, paste("Thread", i, sep="."))
+}
 
 # Load data
-df = read.csv('../nebula.csv', header = FALSE, sep = ",", quote = "\"", dec = ".")
-colnames(df) = c("LockName", "Iteration", "ThreadNum", "NumThreads", "Time", "Count");
+df1 = read.csv('../nebula_2.csv', header = TRUE, sep = ",", quote = "\"", dec = ".")
+df2 = read.csv('../nebula_16.csv', header = TRUE, sep = ",", quote = "\"", dec = ".")
+df3 = read.csv('../nebula_128.csv', header = TRUE, sep = ",", quote = "\"", dec = ".")
+df4 = read.csv('../nebula_1024.csv', header = TRUE, sep = ",", quote = "\"", dec = ".")
+
+df = rbind(df1, df2, df3, df4)
+
 df$FullName = paste(df$LockName, "-", df$NumThreads, sep = " ")
 
-fair = aggregate(df$Count, list(df$LockName, df$NumThreads, df$ThreadNum), FUN=sum)
-colnames(fair) = c("LockName", "NumThreads", "ThreadNum", "Count");
-fair = fair[fair$ThreadNum < fair$NumThreads,]
-fair[is.na(fair$Count), "Count"] = 0
-fair$Unfairness = fair$Count * fair$NumThreads / totalRuns
 
-fairAggregate = aggregate(fair$Unfairness, list(fair$LockName, fair$NumThreads), FUN = sd)
-colnames(fairAggregate) = c("LockName", "NumThreads", "Unfairness");
-fairAggregate$Unfairness = fairAggregate$Unfairness / sqrt(fairAggregate$NumThreads)
+df$SD = rowSds(as.matrix(df[,threads]), na.rm = TRUE)
+df$Count = rowSums(as.matrix(df[,threads]), na.rm = TRUE)
+df$Unfairness = df$SD / df$Count * sqrt(df$NumThreads)
 
-ggplot(data=fairAggregate, aes(x=NumThreads, y=Unfairness, group=LockName, colour=LockName)) +
+fair = aggregate(df$Unfairness, list(df$LockName, df$NumThreads), FUN = mean)
+colnames(fair) = c("LockName", "NumThreads", "Unfairness");
+
+ggplot(data=fair, aes(x=NumThreads, y=Unfairness, group=LockName, colour=LockName)) +
   geom_line()+
   geom_point()
 
 ggsave(paste("../report/fig/fairness_", "all", ".pdf", sep=""), height=8, width=12, dpi=1000)
 
-fairAggregate = fairAggregate[fairAggregate$LockName != "TTAS Lock",]
-fairAggregate = fairAggregate[fairAggregate$LockName != "TAS Lock",]
+fair = fair[fair$LockName != "TTAS Lock",]
+fair = fair[fair$LockName != "TAS Lock",]
 
-ggplot(data=fairAggregate, aes(x=NumThreads, y=Unfairness, group=LockName, colour=LockName)) +
+ggplot(data=fair, aes(x=NumThreads, y=Unfairness, group=LockName, colour=LockName)) +
   geom_line()+
   geom_point()
 
 ggsave(paste("../report/fig/fairness_", "no_tas", ".pdf", sep=""), height=8, width=12, dpi=1000)
-
-# Check that all have 128*128 iterations
-aggregate(fair$Count, list(fair$LockName, fair$NumThreads), FUN = sum)
 
