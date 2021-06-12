@@ -13,16 +13,18 @@
 #include "locks/tas.hpp"
 #include "locks/ttas.hpp"
 
-#define NUM_LOCK_OP 256
-#define NUM_LOCK_CYCLES 128
-#define NUM_CS_CYCLES 128
-
 #define THREAD_INIT 2
 #define THREAD_MAX 64
 #define THREAD_INCREMENT 2
 
-int runLock(std::ofstream& dataCollector, BaseLock *lock, int iteration, int nthreads, int lock_iterations, int cs_iterations)
-{
+int runLock (
+	std::ofstream& dataCollector,
+	BaseLock *lock,
+	int iteration,
+	int nthreads,
+	int lock_iterations,
+	int cs_iterations
+) {
 	int counter = 0, duration;
 	int thread_counter[THREAD_MAX] = {0};
 	omp_set_num_threads(nthreads);
@@ -48,8 +50,8 @@ int runLock(std::ofstream& dataCollector, BaseLock *lock, int iteration, int nth
 				lock->unlock();
 				break;
 			}
-			
-			for(int cs=0; cs<cs_iterations; ++cs){/*wait*/}
+
+			for(int cs = 0; cs < cs_iterations; cs++) {/*wait*/}
 
 			thread_counter[tid]++;
 
@@ -57,21 +59,31 @@ int runLock(std::ofstream& dataCollector, BaseLock *lock, int iteration, int nth
 		}
 	}
 
+	dataCollector
+		<< "\"" << lock->get_name() << "\","
+		<< iteration << ","
+		<< i << ","
+		<< nthreads << ","
+		<< cs_iterations << ","
+		<< duration
+
 	for (int i = 0; i < nthreads; i++) {
-		dataCollector
-			<< "\"" << lock->get_name() << "\","
-			<< iteration << ","
-			<< i << ","
-			<< nthreads << ","
-			<< duration << ","
-			<< thread_counter[i] << std::endl << std::flush;
+		dataCollector << "," << thread_counter[i];
 	}
+
+	dataCollector << std::endl << std::flush;
 
 	return EXIT_SUCCESS;
 }
 
-int runMultipleLock(std::ofstream& dataCollector, BaseLock *lock, int nthreads, int loop_iterations, int lock_iterations, int cs_iterations)
-{
+int runMultipleLock (
+	std::ofstream& dataCollector,
+	BaseLock *lock,
+	int nthreads,
+	int loop_iterations,
+	int lock_iterations,
+	int cs_iterations
+) {
 	std::cout << "Running " << lock->get_name() << " for " << nthreads << " threads";
 
 	for (int i = 0; i < loop_iterations; i++) {
@@ -105,11 +117,10 @@ int main(int argc, char *argv[])
 		printf("Usage: lock [out filename] [outer iterations] [inner iterations] [cs iterations]\n");
 		exit(EXIT_FAILURE);
 	}
-	
-	std::cout << loop_iterations << " " << lock_iterations << " " << cs_iterations << std::endl;
-	
-	omp_set_dynamic(0);     // Explicitly disable dynamic teams
 
+	std::cout << loop_iterations << " " << lock_iterations << " " << cs_iterations << std::endl;
+
+	omp_set_dynamic(0);     // Explicitly disable dynamic teams
 
 	for (nthreads = THREAD_INIT; nthreads <= THREAD_MAX; nthreads *= THREAD_INCREMENT) {
 		PetersonLock lock(nthreads);
