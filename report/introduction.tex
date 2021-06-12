@@ -1,4 +1,4 @@
-Mutual exclusion is perhaps the most prevalent form of coordination in multiprocessor programming. In this report we analyze some mutual exclusion algorithms that work by reading and writing shared memory, called registers lock. In particular we present the results obtained on a 64-thread Cluster provided by the Technical University of Vienna (Nebula) related to the following register locks:
+Mutual exclusion is perhaps the most prevalent form of coordination in multiprocessor programming. In this report we analyze some mutual exclusion algorithms that work by reading and writing shared memory, called registers lock. In particular we present the results obtained on a x86\_64 AMD Epyc 64-thread Cluster provided by the Technical University of Vienna (Nebula) related to the following register locks:
 
 \begin{itemize}
 	\item Filter Lock
@@ -8,14 +8,12 @@ Mutual exclusion is perhaps the most prevalent form of coordination in multiproc
 	\item Boulangerie Lock
 \end{itemize}
 
-The results are compared with three baseline provided by the test-and-set and, test-and-test-and-set and OpenMP locks.
-
-Furthermore, an analysis of properties as mutual exclusion, starvation freedom, deadlock freedom and fairness is proposed.
+The results are compared with three baseline provided by the test-and-set and, test-and-test-and-set and OpenMP locks: an analysis of performance and fairness is proposed.
 
 
 ...
 
-
+TODO:
 Challenge: Memory behavior. Ensure that memory (register)
 updates become visible in required order! Explain what happens if
 not (Peterson).
