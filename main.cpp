@@ -179,7 +179,7 @@ int main(int argc, char *argv[])
 	}
 
 	for (nthreads = THREAD_INIT; nthreads <= THREAD_MAX; nthreads += THREAD_INCREMENT) {
-		NativeOmpLock lock(nthreads);
+		NativeOmpLock lock();
 		if (runMultipleLock(dataCollector, &lock, nthreads, loop_iterations, lock_iterations, cs_iterations) != EXIT_SUCCESS) {
 			return EXIT_FAILURE;
 		}
