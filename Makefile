@@ -4,7 +4,7 @@ CFLAGS = -Wall -g -fopenmp -std=c++11
 all: lock
 
 lock: main.o filterLock.o bakeryLock.o lamportLock.o boulangerieLock.o petersonNode.o tas.o ttas.o petersonLock.o nativeOmpLock.o 
-	$(CC) $(CFLAGS) -o lock main.o filterLock.o bakeryLock.o lamportLock.o boulangerieLock.o petersonNode.o tas.o ttas.o petersonLock.o nativeOmpLock.o && rm -rf *.o
+	$(CC) $(CFLAGS) -o lock main.o filterLock.o bakeryLock.o lamportLock.o boulangerieLock.o petersonNode.o tas.o ttas.o petersonLock.o nativeOmpLock.o 
 
 main.o: main.cpp
 	$(CC) $(CFLAGS) -c main.cpp
