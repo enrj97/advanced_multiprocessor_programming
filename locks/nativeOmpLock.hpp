@@ -6,7 +6,7 @@
 #include <omp.h>
 #include <time.h>
 #include <unistd.h>
-#include <climits>
+#include "baseLock.hpp"
 
 class NativeOmpLock: public BaseLock  {
   private:
