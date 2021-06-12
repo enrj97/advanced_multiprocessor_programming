@@ -117,6 +117,13 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
+	dataCollector << "\"LockName\", \"Iteration\", \"ThreadNum\", \"NumThreads\", \"Time\", \"Count\"";
+	for (int i = 0; i < THREAD_MAX; i++) {
+		dataCollector << ", \"Thread " << i << "\"";
+	}
+
+	dataCollector << std::endl << std::flush;
+
 	std::cout << loop_iterations << " " << lock_iterations << " " << cs_iterations << std::endl;
 
 	omp_set_dynamic(0);     // Explicitly disable dynamic teams
