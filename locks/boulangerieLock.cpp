@@ -11,6 +11,7 @@ BoulangerieLock::BoulangerieLock (int numThreads) {
 	for (int i = 0; i < numThreads; i ++) {
 	  choosing[i] = false;
 	  number[i] = 0;
+	  num[i] = 0;
 	}
 	n = numThreads;
 }
@@ -29,7 +30,11 @@ void BoulangerieLock::lock () {
 	int i = omp_get_thread_num();
 
 	choosing[i] = true;
-	number[i] = findMax() + 1;
+	for(int j=0; j<n; j++){
+		num[i]=number[j];
+	}
+	num[i] = findMax() + 1;
+	number[i] = num[i];
 	choosing[i] = false;
 
 	// Optimizing for lower contention
@@ -51,19 +56,21 @@ void BoulangerieLock::lock () {
 		do{
 			prev_n = tmp_n; 
 			tmp_n = number[j];
-		} while (tmp_n != 0 && (number[i] > tmp_n || (number[i] == tmp_n && i > j)) && (tmp_n == prev_n || prev_n == -1));	 
+		} while (tmp_n != 0 && (num[i] > tmp_n || (num[i] == tmp_n && i > j)) && (tmp_n == prev_n || prev_n == -1));	 
 	} 
 }
 
 void BoulangerieLock::unlock () {
-	number[omp_get_thread_num()] = false;
+	int i = omp_get_thread_num();
+	num[i] = false;
+	number[i] = num[i];
 }
 
 int BoulangerieLock::findMax() {
-	int m = number[0];
+	int m = num[0];
 	for (int k=1; k<n; ++k) {
-		if (number[k] > m)
-			m = number[k];
+		if (num[k] > m)
+			m = num[k];
 	}
 	return m;
 }
