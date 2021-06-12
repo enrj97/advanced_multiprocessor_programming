@@ -15,7 +15,7 @@ class FilterLock : public BaseLock {
     int n;
 
   public:
-    FilterLock(int n);
+    FilterLock(int num);
     ~FilterLock ();
     void lock();
     void unlock();

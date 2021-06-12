@@ -1,9 +1,9 @@
 #include "filterLock.hpp"
 
-FilterLock::FilterLock (int n) {
-  level = new int[n];
-  victim = new int[n];
-  this -> n = n;
+FilterLock::FilterLock (int num) {
+  level = new int[num];
+  victim = new int[num];
+  n = num;
 }
 
 FilterLock::~FilterLock () {
