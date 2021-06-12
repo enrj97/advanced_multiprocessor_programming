@@ -62,7 +62,7 @@ Since the Peterson Lock works for a 2-thread implementation, a way to generalize
 In the tree-lock’s acquire method, the thread acquires every two-thread Peterson lock fromthat thread’s leaf to the root. The tree-lock’s release method for the tree-lock unlocks each of the 2-thread Peterson locks that thread has acquired, from the root back to its leaf.
 
 The Tournament tree of 2-thread Peterson locks satisfies mutual exlusion, deadlock freedom and starvation freedom properties but it is not fair since a thread can be delayed and overtaken an arbitrary number of times(see the Exercise 12 from the book).
-
+(???)
 \begin{minted}[
 	frame=lines,
 	framesep=2mm,
@@ -72,7 +72,61 @@ The Tournament tree of 2-thread Peterson locks satisfies mutual exlusion, deadlo
 	breaklines
 	]
 	{C}
+#include "petersonLock.hpp"
+
+PetersonLock::PetersonLock(int n){
+	numOfThreads = n;
+	root = new PetersonNode(NULL, numOfThreads);
 	
+	std::vector<PetersonNode*> initList;
+	initList.push_back(root);
+	
+	leaves = createTree(initList);
+}
+
+PetersonLock::~PetersonLock(){
+}
+
+void PetersonLock::lock() {
+	int i = omp_get_thread_num();
+	PetersonNode* currentNode = getLeaf(i);
+	
+	while (currentNode != NULL) {
+		currentNode->lock();
+		currentNode = currentNode->parent;
+	}
+}
+
+void PetersonLock::unlock() {
+	int i = omp_get_thread_num();
+	PetersonNode* currentNode = getLeaf(i);
+	
+	while (currentNode != NULL) {
+		currentNode->unlock();
+		currentNode = currentNode->parent;
+	}
+}
+
+// get leaf for a specific thread id, each lock shares two threads.
+PetersonNode* PetersonLock::getLeaf(int num) {
+	return leaves.at(num / 2);
+}
+
+std::vector<PetersonNode*> PetersonLock::createTree(std::vector<PetersonNode*> nodes) {
+	if ((int)nodes.size() == numOfThreads / 2)
+		return nodes;
+
+	std::vector<PetersonNode*> currentLeaves;
+
+	for (PetersonNode* node : nodes) {
+		node->leftChild = new PetersonNode(node, numOfThreads);
+		node->rightChild = new PetersonNode(node, numOfThreads);
+		
+		currentLeaves.push_back(node->leftChild);
+		currentLeaves.push_back(node->rightChild);
+	}
+	return createTree(currentLeaves);
+}
 \end{minted}
 
 \subsection{Herlihy-Shavit Bakery Lock}
