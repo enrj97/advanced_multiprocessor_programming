@@ -62,10 +62,9 @@ int runLock (
 	dataCollector
 		<< "\"" << lock->get_name() << "\","
 		<< iteration << ","
-		<< i << ","
 		<< nthreads << ","
 		<< cs_iterations << ","
-		<< duration
+		<< duration;
 
 	for (int i = 0; i < nthreads; i++) {
 		dataCollector << "," << thread_counter[i];
