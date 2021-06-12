@@ -32,6 +32,7 @@ ggsave(paste("../report/fig/fairness_", "all", ".pdf", sep=""), height=8, width=
 
 fair = fair[fair$LockName != "TTAS Lock",]
 fair = fair[fair$LockName != "TAS Lock",]
+fair = fair[fair$LockName != "NativeOmpLock",]
 
 ggplot(data=fair, aes(x=NumThreads, y=Unfairness, group=LockName, colour=LockName)) +
   geom_line()+
