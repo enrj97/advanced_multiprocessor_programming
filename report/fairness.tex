@@ -1,0 +1,49 @@
+In order to compare the fairness across locks and different sizes we decided to
+create a scale from $0$ to $1$ where $0$ is a perfectly fair lock and $1$ is a
+lock where only one thread has repeatedly acquired the lock.
+To avoid creating a biased measure, we reuse the concept of standard deviation
+from statistics, that we re-scale for our purposes.
+In particular, we call our measure $U$ for \textit{Unfairness}:
+$$
+  U = \frac{\sqrt{n}}{\sum_{i = 1}^{n} k_i} \operatorname{sd}(k_i)
+    = \frac{\sqrt{n}}{\sqrt{n-1}} \frac{\sqrt{\sum_{i = 1}^{n} (k_i - \bar{k})^2}}{\sum_{i = 1}^{n} k_i}
+$$
+where $n$ is the number of threads and $k_i$ is the number of locks acquired by thread $i$.
+
+If we set all $k_i$ to be $0$ but one ($k_j$) we obtain:
+\begin{align*}
+  U &= \frac{\sqrt{n}}{\sqrt{n-1}} \frac{\sqrt{(n-1)(\bar{k})^2 + (k_j - \bar{k})^2}}{k_j} \\
+    &= \frac{\sqrt{n}}{\sqrt{n-1}} \frac{\sqrt{(n-1)(k_j/n)^2 + (k_j - k_j/n)^2}}{k_j} \\
+    &= \frac{1}{k_j} \sqrt{\frac{n}{n-1} \left[(n-1)\frac{k_j^2}{n^2} + \frac{k_j^2}{n^2}(n - 1)^2 \right]} \\
+    &= \frac{1}{k_j} \sqrt{n \left[\frac{k_j^2}{n^2} + \frac{k_j^2}{n^2}(n - 1) \right]} \\
+    &= \frac{1}{k_j} \sqrt{n^2\frac{k_j^2}{n^2}} = 1.
+\end{align*}
+
+When all threads acquire the same amount of locks then $k_i = \bar{k} \forall i$
+and by definition of standard deviation the result is zero.
+
+Using this measure we can now meaningfully compare the (un)fairness across
+various implementations and with different sizes in figure \ref{fig:fairness-all}.
+
+We notice immediately that the TAS, TTAS, and OpenMP locks are highly unfair.
+In the collected data most of the executions are characterised by one or two
+threads mostly getting the lock.
+We can then exclude the from the plot to distinguish
+the custom locks in figure \ref{fig:fairness-no-tas}.
+
+Between these, we have that the Bakery and derivates behave very similarly, with
+an extemely low unfairness, while the Peterson and Filter lock present some peaks.
+In particular we can observe a positive correlation between unfairness and size of
+the cluster for the Peterson lock.
+
+\begin{figure}[H]
+  \includegraphics[width=\textwidth]{fig/fairness_all}
+  \caption{Fairness for all implemented locks}
+  \label{fig:fairness-all}
+\end{figure}
+
+\begin{figure}[H]
+  \includegraphics[width=\textwidth]{fig/fairness_no_tas}
+  \caption{Fairness for custom locks}
+  \label{fig:fairness-no-tas}
+\end{figure}
