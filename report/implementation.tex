@@ -1,8 +1,116 @@
 \subsection{Setup}
+We created a class \texttt{BaseLock} that encapsulates the behaviour of all the
+locks with a simple interface, in order to write a framework that could test
+all locks re-using the same structure and giving a constant overhead.
+\begin{minted}[
+	frame=lines,
+	framesep=2mm,
+	baselinestretch=.9,
+	fontsize=\footnotesize,
+	linenos,
+	breaklines
+	]
+	{C}
+class BaseLock {
+  public:
+    virtual void lock() = 0;
+    virtual void unlock() = 0;
+    virtual const char *get_name() = 0;
+};
+\end{minted}
 
-Description of main task, CS etc..
-...
-...
+All the implemented locks, extensions of the \texttt{BaseLock} class, are procedurally
+tested from the \texttt{runLock} function.
+Here, we instantiate the parallelization: we define a parallel part using the
+\texttt{\#pragma omp parallel} instruction, then sync all threads with a barrier.
+We then start measuring the time in each thread, since it might not be syncronized.
+The last thread of the measured loops (i.e. when \texttt{counter == lock\_iterations})
+will write the total time required for the loop to a shared variable, to then
+compute the lock performance.
+
+Furhtermore in the critical section we count how many locks has each thread
+using the \texttt{thread\_counter} variable, to then compute the fairness.
+
+In the CS we also execute a constant load defined by the variable \texttt{cs\_iterations}
+that will run an empty \texttt{while} loop for the required amount of cycles.
+
+All these shared variables are then logged to a CSV outside of the lock execution
+since file write might be a non constant bottleneck.
+
+\begin{minted}[
+	frame=lines,
+	framesep=2mm,
+	baselinestretch=.9,
+	fontsize=\footnotesize,
+	linenos,
+	breaklines
+	]
+	{C}
+int run_lock (
+	std::ofstream& dataCollector,
+	BaseLock *lock,
+	int iteration,
+	int nthreads,
+	int lock_iterations,
+	int cs_iterations
+) {
+	int counter = 0, duration;
+	int thread_counter[THREAD_MAX] = {0};
+	omp_set_num_threads(nthreads);
+
+	#pragma omp parallel shared(counter, thread_counter, duration, lock_iterations)
+	{
+		int tid = omp_get_thread_num();
+		std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
+
+		#pragma omp barrier
+		start = std::chrono::high_resolution_clock::now();
+
+		while(counter <= lock_iterations) {
+			lock->lock();
+			counter++;
+
+			if (counter == lock_iterations) {
+				end = std::chrono::high_resolution_clock::now();
+				duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+			}
+
+			if (counter >= lock_iterations) {
+				lock->unlock();
+				break;
+			}
+
+			for(int cs = 0; cs < cs_iterations; cs++) {/*wait*/}
+
+			thread_counter[tid]++;
+
+			lock->unlock();
+		}
+	}
+
+	dataCollector
+		<< "\"" << lock->get_name() << "\","
+		<< iteration << ","
+		<< nthreads << ","
+		<< cs_iterations << ","
+		<< duration;
+
+	for (int i = 0; i < nthreads; i++) {
+		dataCollector << "," << thread_counter[i];
+	}
+
+	dataCollector << std::endl << std::flush;
+
+	return EXIT_SUCCESS;
+}
+\end{minted}
+
+The main function handles the file output and repeatedly runs this procedure,
+in order to log the performance results for all the locks with a varying amount
+of threads.
+
+The data collected in the CSV is finally analysed using R where we extract the
+statistics and produce the plots in this report.
 
 \subsection{Filter Lock}
 The Filter lock is a generalized version of the Peterson lock, it creates $n-1$ ``waiting rooms'', or levels,
