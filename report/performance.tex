@@ -6,8 +6,8 @@ Finally, we repeat this procedure for increasing sizes in every lock, for a tota
 of slightly over 30 million lock acquisitions.
 
 In order to determine these thresholds we ran the algorithm on various sizes and
-settled with the first one where no more significative oscillation happened,
-in order to remain in the 5 minutes limit imposed on the Nebula backend.
+settled with the first one where no more significant oscillation happened,
+in order to remain in the 5 minutes limit imposed on the Nebula back-end.
 
 A further parameter we explored is the size of the critical section.
 In all the iterations this is a fixed parameter, where we perform 2, 16, 128,
@@ -35,12 +35,12 @@ by $m$.
 Therefore, we obtained two plots scaled by a factor $m$.
 
 Furthermore, this measure is the inverse of throughput, therefore sums up the
-performance very coincisely.
+performance very concisely.
 
 In figure \ref{fig:meantime-2-all} we can observe the performance for all locks,
 given CS size 2.
 In particular the Filter lock will have a consistently much lower performance
-regardless of the CS size, and will be therefore excluded from the follwing
+regardless of the CS size, and will be therefore excluded from the following
 plots in order to make the data readable.
 
 \begin{figure}[H]
@@ -56,7 +56,7 @@ The TAS lock is performant for lower amount of threads, but high contention will
 make it the worst lock (except the Filter Lock).
 Bakery, Lamport and Boulangerie all behave similarly, with a slow increase in
 latency with increasing number of thread, but in a smooth way.
-Finally, the peterson lock offers a very good performance for small locks, i.e.
+Finally, the Peterson lock offers a very good performance for small locks, i.e.
 up to size 8, being also quite fair.
 \begin{figure}[H]
   \includegraphics[width=\textwidth]{fig/meantime_2_no_filter}

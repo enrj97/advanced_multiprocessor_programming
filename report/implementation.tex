@@ -23,12 +23,12 @@ All the implemented locks, extensions of the \texttt{BaseLock} class, are proced
 tested from the \texttt{runLock} function.
 Here, we instantiate the parallelization: we define a parallel part using the
 \texttt{\#pragma omp parallel} instruction, then sync all threads with a barrier.
-We then start measuring the time in each thread, since it might not be syncronized.
+We then start measuring the time in each thread, since it might not be synchronised.
 The last thread of the measured loops (i.e. when \texttt{counter == lock\_iterations})
 will write the total time required for the loop to a shared variable, to then
 compute the lock performance.
 
-Furhtermore in the critical section we count how many locks has each thread
+Furthermore in the critical section we count how many locks has each thread
 using the \texttt{thread\_counter} variable, to then compute the fairness.
 
 In the CS we also execute a constant load defined by the variable \texttt{cs\_iterations}
@@ -122,7 +122,7 @@ that a thread must traverse before acquiring the lock. Levels satisfy two import
 
 The Filter lock uses an n-element integer array (called \texttt{level[]}) to indicate the highest level that a thread is trying to enter. Each thread must pass $n-1$ levels to enter in the critical section and each level has its own victim to filter out one thread and excluding it from the next level.
 
-The Filter lock satisfies mutual exlusion, deadlock freedom and starvation freedom properties but is not guaranteed to be fair since the threads can overtake others an arbitrary number of times (see exercise 12 from the book).
+The Filter lock satisfies mutual exclusion, deadlock freedom and starvation freedom properties but is not guaranteed to be fair since the threads can overtake others an arbitrary number of times (see exercise 12 from the book).
 
 \begin{minted}[
 	frame=lines,
@@ -168,7 +168,7 @@ Since the Peterson Lock works for a 2-thread implementation, a way to generalize
 
 In the tree-lock’s acquire method, the thread acquires every two-thread Peterson lock from that thread’s leaf to the root. The tree-lock’s release method for the tree-lock unlocks each of the 2-thread Peterson locks that thread has acquired, from the root back to its leaf.
 
-The Tournament tree of 2-thread Peterson locks satisfies mutual exlusion, deadlock freedom and starvation freedom properties but it is not guaranteed to be fair since a thread can be delayed and overtaken an arbitrary number of times (see exercise 12 from the book).
+The Tournament tree of 2-thread Peterson locks satisfies mutual exclusion, deadlock freedom and starvation freedom properties but it is not guaranteed to be fair since a thread can be delayed and overtaken an arbitrary number of times (see exercise 12 from the book).
 
 \begin{minted}[
 	frame=lines,
@@ -246,7 +246,7 @@ the doorway.
 The lock establishes that thread’s order with respect to the other threads trying to acquire the lock. If two threads execute their doorways concurrently, they may read the same maximal label and pick the same new label. To break this symmetry, the algorithm uses a lexicographical ordering on pairs of \texttt{label[]} and thread ids at line 36, each thread read the labels one after the other in some arbitrary order until it determines that no
 thread with a raised flag has a lexicographically smaller label/id pair, then it enters the critical section.
 
-The Herlihy-Shavit Bakery Lock satisfies mutual exlusion, deadlock freedom and starvation freedom properties and it is also fair (first-come-first-serve, see Lemma 2.6.2 from the Book)
+The Herlihy-Shavit Bakery Lock satisfies mutual exclusion, deadlock freedom and starvation freedom properties and it is also fair (first-come-first-serve, see Lemma 2.6.2 from the Book)
 
 \begin{minted}[
 	frame=lines,
@@ -309,7 +309,7 @@ Each time a thread acquires a lock, it generates a new \texttt{number[]} by read
 
 It establishes that thread’s order with respect to the other threads trying to acquire the lock. If two threads execute their doorways concurrently, they may read the same maximal label and pick the same new label. To break this symmetry, the algorithm uses a lexicographical ordering on pairs of \texttt{number[]} as already explained in the previous lock, then it enters the critical section.
 
-The Lamport Bakery Lock satisfies mutual exlusion, deadlock freedom and starvation freedom properties and it is also fair, since if thread A executes the doorway before thread B then B is locked out while \texttt{number[A]} is greater than 0.
+The Lamport Bakery Lock satisfies mutual exclusion, deadlock freedom and starvation freedom properties and it is also fair, since if thread A executes the doorway before thread B then B is locked out while \texttt{number[A]} is greater than 0.
 
 \begin{minted}[
 	frame=lines,
@@ -376,7 +376,7 @@ The Boulangerie Lock \cite{MOSES201846} is a modified version of the Lamport Bak
 	\item Taking advantage of inconsistent reads: let's consider two threads $i$ and $j$, and that we perform read/write operation on safe registers. As long as $j$ is in the bakery it performs no writes on \texttt{number[j]} thus, \texttt{number[j]} is stable and all reads to it must return the same value. If $i$ reads two different values for \texttt{number[j]} while blocking during the spinning, it has proof that $j$ was on the outside at least during one of these reads. Since $i$ is the bakery section at that point, it follows that $i < j$ is true, and $i$ can stop blocking on $j$ and move on to test the next process.
 \end{itemize}
 
-The Boulangerie Lock satisfies mutual exlusion, deadlock freedom and starvation freedom properties and it is also fair, since if thread A executes the doorway before thread B then B is locked out while \texttt{number[A]} is greater than 0.
+The Boulangerie Lock satisfies mutual exclusion, deadlock freedom and starvation freedom properties and it is also fair, since if thread A executes the doorway before thread B then B is locked out while \texttt{number[A]} is greater than 0.
 
 
 \begin{minted}[
