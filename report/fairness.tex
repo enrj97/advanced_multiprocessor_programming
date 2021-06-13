@@ -10,19 +10,24 @@ $$
 $$
 where $n$ is the number of threads and $k_i$ is the number of locks acquired by thread $i$.
 
-If we set all $k_i$ to be $0$ but one ($k_j$) we obtain:
-\begin{align*}
-  U &= \frac{\sqrt{n}}{\sqrt{n-1}} \frac{\sqrt{(n-1)(\bar{k})^2 + (k_j - \bar{k})^2}}{k_j} \\
-    &= \frac{\sqrt{n}}{\sqrt{n-1}} \frac{\sqrt{(n-1)(k_j/n)^2 + (k_j - k_j/n)^2}}{k_j} \\
-    &= \frac{1}{k_j} \sqrt{\frac{n}{n-1} \left[(n-1)\frac{k_j^2}{n^2} + \frac{k_j^2}{n^2}(n - 1)^2 \right]} \\
-    &= \frac{1}{k_j} \sqrt{n \left[\frac{k_j^2}{n^2} + \frac{k_j^2}{n^2}(n - 1) \right]} \\
-    &= \frac{1}{k_j} \sqrt{n^2\frac{k_j^2}{n^2}} = 1.
-\end{align*}
+Using this definition we inherit the following properties from the standard deviation:
+\begin{itemize}
+  \item When all threads acquire the same amount of locks then
+    $k_i = \bar{k} \forall i$, then $\operatorname{sd}(k_i) = 0 $ and the result
+    is zero.
+  \item When counting elements, the standard deviation is maximal when only one
+    element is maximal.
+    We can show that the maximum of $U$ is 1, by setting $k_i = 0 \forall i \neq j$ and $k_j \neq 0$:
+    \begin{align*}
+      U &= \frac{\sqrt{n}}{\sqrt{n-1}} \frac{\sqrt{(n-1)(\bar{k})^2 + (k_j - \bar{k})^2}}{k_j} \\
+        &= \frac{\sqrt{n}}{\sqrt{n-1}} \frac{\sqrt{(n-1)(k_j/n)^2 + (k_j - k_j/n)^2}}{k_j} \\
+        &= \frac{1}{k_j} \sqrt{\frac{n}{n-1} \left[(n-1)\frac{k_j^2}{n^2} + \frac{k_j^2}{n^2}(n - 1)^2 \right]} \\
+        &= \frac{1}{k_j} \sqrt{n \left[\frac{k_j^2}{n^2} + \frac{k_j^2}{n^2}(n - 1) \right]} \\
+        &= \frac{1}{k_j} \sqrt{n^2\frac{k_j^2}{n^2}} = 1.
+    \end{align*}
+\end{itemize}
 
-When all threads acquire the same amount of locks then $k_i = \bar{k} \forall i$
-and by definition of standard deviation the result is zero.
-
-Using this measure we can now meaningfully compare the (un)fairness across
+This measure allows to meaningfully compare the (un)fairness across
 various implementations and with different sizes in figure \ref{fig:fairness-all}.
 
 We notice immediately that the TAS, TTAS, and OpenMP locks are highly unfair.
@@ -35,6 +40,18 @@ Between these, we have that the Bakery and derivates behave very similarly, with
 an extemely low unfairness, while the Peterson and Filter lock present some peaks.
 In particular we can observe a positive correlation between unfairness and size of
 the cluster for the Peterson lock.
+
+This is in line with the theory, in fact the TAS and TTAS locks are extremely
+opportunistic and all threads wait in the same queue, no matter if they have
+just exited the CS or have been trying to access for a long while.
+The Filter and Peterson lock do not provide fairness guarantees, but still
+implement a queue, that prevent such behaviour from happening, and this is
+reflected in a slightly uneven thread acquisition distribution.
+Bakery, Lamport, and Boulangerie are instead FIFO, and this is reflected in
+their extremely fair behaviour. The fluctuation that is seen at the lower end
+of the graph is due to integer division: by doing only 1024 iterations some
+set of threads will get one iteration more if 1024 is not divisible by $n$, the 
+number of threads.
 
 \begin{figure}[H]
   \includegraphics[width=\textwidth]{fig/fairness_all}
