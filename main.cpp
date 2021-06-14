@@ -129,7 +129,7 @@ int main(int argc, char *argv[])
 
 	omp_set_dynamic(0);     // Explicitly disable dynamic teams
 
-	for (nthreads = THREAD_INIT; nthreads <= THREAD_MAX; nthreads *= THREAD_INCREMENT) {
+	for (nthreads = THREAD_INIT; nthreads <= THREAD_MAX; nthreads *= 2) {
 		PetersonLock lock(nthreads);
 		if (run_multiple_lock(dataCollector, &lock, nthreads, loop_iterations, lock_iterations, cs_iterations) != EXIT_SUCCESS) {
 			return EXIT_FAILURE;
