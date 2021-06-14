@@ -72,7 +72,7 @@ int run_lock (
 
 			if (counter == lock_iterations) {
 				end = std::chrono::high_resolution_clock::now();
-				duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+				duration = std::chrono::duration_cast<std::chrono::microseconds> (end - start).count();
 			}
 
 			if (counter >= lock_iterations) {
@@ -122,7 +122,7 @@ that a thread must traverse before acquiring the lock. Levels satisfy two import
 
 The Filter lock uses an n-element integer array (called \texttt{level[]}) to indicate the highest level that a thread is trying to enter. Each thread must pass $n-1$ levels to enter in the critical section and each level has its own victim to filter out one thread and excluding it from the next level.
 
-The Filter lock satisfies mutual exclusion, deadlock freedom and starvation freedom properties but is not guaranteed to be fair since the threads can overtake others an arbitrary number of times (see exercise 12 from the book).
+The Filter lock satisfies mutual exclusion, deadlock freedom and starvation freedom properties but is not guaranteed to be fair since the threads can overtake others an arbitrary number of times (see exercise 12 from the book). The space complexity is $O(n)$ where n is the number of threads.
 
 \begin{minted}[
 	frame=lines,
@@ -164,11 +164,11 @@ void FilterLock::unlock() {
 \end{minted}
 
 \subsection{Tournament tree of 2-thread Peterson locks}
-Since the Peterson Lock works for a 2-thread implementation, a way to generalize it is to arrange a number of 2-thread locks in a binary tree. Suppose $n$ is a power of two. Each thread is assigned a leaf lock which it shares with one other thread. Each lock treats one thread as thread 0 and the other as thread 1.
+Since the Peterson Lock works for a 2-thread implementation, another way to generalize it is to arrange a number of 2-thread locks in a binary tree. Suppose $n$ is a power of two. Each thread is assigned a leaf lock which it shares with one other thread. Each lock treats one thread as thread 0 and the other as thread 1.
 
 In the tree-lock’s acquire method, the thread acquires every two-thread Peterson lock from that thread’s leaf to the root. The tree-lock’s release method for the tree-lock unlocks each of the 2-thread Peterson locks that thread has acquired, from the root back to its leaf.
 
-The Tournament tree of 2-thread Peterson locks satisfies mutual exclusion, deadlock freedom and starvation freedom properties but it is not guaranteed to be fair since a thread can be delayed and overtaken an arbitrary number of times (see exercise 12 from the book).
+The Tournament tree of 2-thread Peterson locks satisfies mutual exclusion, deadlock freedom and starvation freedom properties but it is not guaranteed to be fair since a thread can be delayed and overtaken an arbitrary number of times (see exercise 13 from the book). In particular the more are the threads the less the algorithm is fair (see later results). Note that in order to run this algorithm the number of thread must be a power of 2.
 
 \begin{minted}[
 	frame=lines,
@@ -246,7 +246,7 @@ the doorway.
 The lock establishes that thread’s order with respect to the other threads trying to acquire the lock. If two threads execute their doorways concurrently, they may read the same maximal label and pick the same new label. To break this symmetry, the algorithm uses a lexicographical ordering on pairs of \texttt{label[]} and thread ids at line 36, each thread read the labels one after the other in some arbitrary order until it determines that no
 thread with a raised flag has a lexicographically smaller label/id pair, then it enters the critical section.
 
-The Herlihy-Shavit Bakery Lock satisfies mutual exclusion, deadlock freedom and starvation freedom properties and it is also fair (first-come-first-serve, see Lemma 2.6.2 from the Book)
+The Herlihy-Shavit Bakery Lock satisfies mutual exclusion, deadlock freedom and starvation freedom properties and it is also fair (first-come-first-serve, see Lemma 2.6.2 from the Book). The space complexity is $O(n)$ where n is the number of threads since we have 2n shared integer variables. One drawback is that the labels grow without bounds.
 
 \begin{minted}[
 	frame=lines,
@@ -309,7 +309,7 @@ Each time a thread acquires a lock, it generates a new \texttt{number[]} by read
 
 It establishes that thread’s order with respect to the other threads trying to acquire the lock. If two threads execute their doorways concurrently, they may read the same maximal label and pick the same new label. To break this symmetry, the algorithm uses a lexicographical ordering on pairs of \texttt{number[]} as already explained in the previous lock, then it enters the critical section.
 
-The Lamport Bakery Lock satisfies mutual exclusion, deadlock freedom and starvation freedom properties and it is also fair, since if thread A executes the doorway before thread B then B is locked out while \texttt{number[A]} is greater than 0.
+The Lamport Bakery Lock satisfies mutual exclusion, deadlock freedom and starvation freedom properties and it is also fair, since if thread A executes the doorway before thread B then B is locked out while \texttt{number[A]} is greater than 0. As in Herlihy-Shavit Bakery Lock the space complexity is again $O(n)$ with n the number of threads and one drawback is that the labels grow without bounds.
 
 \begin{minted}[
 	frame=lines,
@@ -373,11 +373,10 @@ The Boulangerie Lock \cite{MOSES201846} is a modified version of the Lamport Bak
 \begin{itemize}
 	\item Optimizing for low contention: if the thread $i$ has obtained \texttt{number[i] = 1} then the only processes $j$ that can ever have a better ticket are ones whose tid is smaller than $i$. It follows that when \texttt{number[i] = 1}, there is no need to perform the spinning section for values $j > i$. To avoid this form of unnecessary blocking, we add the control lines 36-41.
 
-	\item Taking advantage of inconsistent reads: let's consider two threads $i$ and $j$, and that we perform read/write operation on safe registers. As long as $j$ is in the bakery it performs no writes on \texttt{number[j]} thus, \texttt{number[j]} is stable and all reads to it must return the same value. If $i$ reads two different values for \texttt{number[j]} while blocking during the spinning, it has proof that $j$ was on the outside at least during one of these reads. Since $i$ is the bakery section at that point, it follows that $i < j$ is true, and $i$ can stop blocking on $j$ and move on to test the next process.
+	\item Taking advantage of inconsistent reads: let's consider two threads $i$ and $j$, and that we perform read/write operation on safe registers. As long as $j$ is in the bakery it performs no writes on \texttt{number[j]} thus, \texttt{number[j]} is stable and all reads to it must return the same value. If $i$ reads two different values for \texttt{number[j]} while blocking during the spinning, it has proof that $j$ was on the outside at least during one of these reads. Since $i$ is the bakery section at that point, it follows that $i < j$ is true, and $i$ can stop blocking on $j$ and move on to test the next process. To take advantage of incosistent reads we introduce the lines 53-56.
 \end{itemize}
 
-The Boulangerie Lock satisfies mutual exclusion, deadlock freedom and starvation freedom properties and it is also fair, since if thread A executes the doorway before thread B then B is locked out while \texttt{number[A]} is greater than 0.
-
+The Boulangerie Lock satisfies mutual exclusion, deadlock freedom and starvation freedom properties and it is also fair, since if thread A executes the doorway before thread B then B is locked out while \texttt{number[A]} is greater than 0. We have the same properties/drawbacks already presented for the Lamport and the Herlihy-Shavit Bakery Lock.
 
 \begin{minted}[
 	frame=lines,
@@ -410,8 +409,8 @@ BoulangerieLock::~BoulangerieLock () {
 
 void BoulangerieLock::lock () {
 	bool tmp_c = false;
-	int *prev_n = nullptr;
-	int *tmp_n = nullptr;
+	int prev_n = -1;
+	int tmp_n = -1;
 	int limit = n;
 	int i = omp_get_thread_num();
 
@@ -438,12 +437,12 @@ void BoulangerieLock::lock () {
 			tmp_c = choosing[j];
 		} while(tmp_c);
 
-		tmp_n = nullptr;
-
+		tmp_n = -1;
+		
 		do{
-			prev_n = tmp_n;
-			tmp_n = &number[j];
-		} while (*tmp_n != 0 && (num[i] > *tmp_n || (num[i] == *tmp_n && i > j)) && (tmp_n == prev_n || prev_n == nullptr));
+			prev_n = tmp_n; 
+			tmp_n = number[j];
+		} while (tmp_n != 0 && (num[i] > tmp_n || (num[i] == tmp_n && i > j)) && (tmp_n == prev_n || prev_n == -1));	 
 	}
 }
 
@@ -468,11 +467,12 @@ int BoulangerieLock::findMax() {
 For a baseline performance we consider three additional locks:
 \begin{itemize}
 	\item Test-and-Set Lock: has a single flag field per lock, the thread acquire lock by changing
-	flag from false to true and it locks on success. To unlock it resets the flag. We know from the theory (see slides) that the performance of this lock is bad, due to the high memory contention. The lock is not fair and starvation free but it is fault tolerant.
-	\item Test-and-Test-Set Lock: we test and set only if there is a chance of success. It has a better performance than TAS but memory contention and cache deletion problems are still present. The lock is not fair and starvation free but it is fault tolerant.
+	flag from false to true and it locks on success. To unlock it resets the flag. We know from the theory (see slides) that the performance of this lock is bad, due to the high memory contention. The lock is fault tolerant.
+	\item Test-and-Test-Set Lock: we test and set only if there is a chance of success. It has a better performance than TAS but memory contention and cache deletion problems are still present. The lock is fault tolerant.
 	\item Native OpenMP locks
 \end{itemize}
 
+The baseline locks satisfies mutual exclusion. Furthermore, the TAS and TTAS locks are unfair, not starvation free and space efficient $O(1)$ even for an infinite number of threads. One drawback of these locks is the memory contention since all threads spin on a single memory location.
 
 \begin{minted}[
 	frame=lines,
@@ -539,14 +539,21 @@ void TestAndTestAndSetLock::unlock(){
 	breaklines
 	]
 	{C}
-#include <omp.h>
+#include "nativeOmpLock.hpp"
 
-omp_lock_t mylock ;
-omp_init_lock(&mylock ) ;
+NativeOmpLock::NativeOmpLock (int n) {
+	omp_init_lock(&lck);
+}
 
-omp_set_lock(&writelock);
+NativeOmpLock::~NativeOmpLock () {
+	omp_destroy_lock(&lck);
+}
 
-//critical section
+void NativeOmpLock::lock () {
+	omp_set_lock(&lck);
+}
 
-omp_unset_lock(&writelock);
+void NativeOmpLock::unlock () {
+	omp_unset_lock(&lck);
+}
 \end{minted}
