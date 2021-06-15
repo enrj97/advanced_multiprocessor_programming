@@ -236,6 +236,90 @@ std::vector<PetersonNode*> PetersonLock::createTree(std::vector<PetersonNode*> n
 }
 \end{minted}
 
+In the peterson node we forced the compiler to ignore optimizations by adding the
+keyword \texttt{volatile} to the victim flag, since this can be changed from the
+other thread.
+Given that on Nebula is an x86\_64 with Total Store Order (TSO) guarantees we
+assume that the \texttt{volatile} property to avoid re-ordering and enforcing
+fetching from memory is enough to ensure mutual exclusion, therefore correctness.
+Without this guarantee, it could happen that:
+\begin{itemize}
+	\item The compiler ``optimizes the loop away'', i.e. the while statement
+
+		\texttt{while(flagCheck() \&\& victim == i) \{ /* wait */ \}}
+
+		might be (wrongly) optimised into
+
+		\texttt{if(victim == i) \{ while(flagCheck()) \{ /* wait */ \}\}}
+
+		therefore making the lock incorrect.
+	\item Both locks enter the CS if the update is not seen in the right order,
+		but this would require a very weak memory model since thread 0 would have
+		not to see its own update to memory so that \texttt{victim != i}.
+\end{itemize}
+
+\begin{minted}[
+	frame=lines,
+	framesep=2mm,
+	baselinestretch=.9,
+	fontsize=\footnotesize,
+	linenos,
+	breaklines
+	]
+	{C}
+class PetersonNode{
+  private:
+    bool* flags;
+    int volatile victim;
+    bool flagCheck();
+    int nThreads;
+
+  public:
+    PetersonNode(PetersonNode* node, int n);
+    ~PetersonNode ();
+    void lock();
+    void unlock();
+    PetersonNode* leftChild;
+    PetersonNode* rightChild;
+    PetersonNode* parent;
+
+};
+
+PetersonNode::PetersonNode(PetersonNode* node, int n) {
+	flags = new bool[n];
+	for (int i = 0; i < n; i ++) {
+	  flags[i] = false;
+	}
+	parent = node;
+	nThreads = n;
+}
+
+PetersonNode::~PetersonNode() {
+	delete[] flags;
+}
+
+void PetersonNode::lock () {
+	int i = omp_get_thread_num();
+	flags[i] = true;
+	victim = i;
+	while(flagCheck() && victim == i) { /* wait */ }
+}
+
+
+void PetersonNode::unlock () {
+	flags[omp_get_thread_num()] = false;
+}
+
+bool PetersonNode::flagCheck() {
+	int me = omp_get_thread_num();
+	for (int i = 0; i < nThreads; i++) {
+		if (flags[i] && (i != me))
+			return true;
+	}
+	return false;
+}
+\end{minted}
+
 \subsection{Herlihy-Shavit Bakery Lock}
 The Herlihy-Shavit Bakery Lock is a modified version of the original Lamport's Bakery Lock implementation. In this lock, \texttt{flag[i]} is a Boolean flag indicating whether i wants to
 enter the critical section, and \texttt{label[i]} is an integer that indicates the thread’s order when entering the ``bakery'', for each thread $i$.
@@ -438,11 +522,11 @@ void BoulangerieLock::lock () {
 		} while(tmp_c);
 
 		tmp_n = -1;
-		
+
 		do{
-			prev_n = tmp_n; 
+			prev_n = tmp_n;
 			tmp_n = number[j];
-		} while (tmp_n != 0 && (num[i] > tmp_n || (num[i] == tmp_n && i > j)) && (tmp_n == prev_n || prev_n == -1));	 
+		} while (tmp_n != 0 && (num[i] > tmp_n || (num[i] == tmp_n && i > j)) && (tmp_n == prev_n || prev_n == -1));
 	}
 }
 

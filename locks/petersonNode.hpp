@@ -11,7 +11,7 @@
 class PetersonNode{
   private:
     bool* flags;
-    int victim;
+    int volatile victim;
     bool flagCheck();
     int nThreads;
 
